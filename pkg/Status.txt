@@ -1,0 +1,13 @@
+Archive making			Almost working
+Connection creation via SSH	Working
+File uploading via SSH		Working
+Workunit creation via SSH	Not working
+Result downloading via SSH	Not working
+
+VM loading			Working
+Workunit processing		Working
+
+Connection creation via HTTP	Plans
+File uploading via HTTP		Plans
+Workunit creation via HTTP	Plans
+Result downloading via HTTP	Plans
