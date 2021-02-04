@@ -5,6 +5,7 @@ echo "Starting BOINC application..."
 cp -r ~/shared/* ~/workdir/
 cd ~/workdir
 tar -xf common.tar.xz
+mkdir -p files
 Rscript code.R
 cp result.rbs ~/shared/result.rbs
 echo "Shutdowning..."
