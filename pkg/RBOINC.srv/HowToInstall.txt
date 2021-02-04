@@ -1,0 +1,2 @@
+1. Copy all files in project to your BOINC project directory.
+2. Add "--dont_delete_batches" for file_deleter params in config.xml
