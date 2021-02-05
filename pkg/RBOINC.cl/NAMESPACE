@@ -2,6 +2,8 @@
 
 export(close_connection)
 export(create_connection)
+export(create_jobs)
+importFrom(ssh,scp_upload)
 importFrom(ssh,ssh_connect)
 importFrom(ssh,ssh_disconnect)
 importFrom(ssh,ssh_exec_wait)

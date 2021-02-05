@@ -27,7 +27,8 @@ make_unique_file_names = function(connection, path, data_count)
 {
   data = vector("list", data_count)
   files_prefix = ""
-  ssh_exec_wait(connection$connection, "echo `date +\"%G_%m_%d_%I_%M_%S_%N\"`_${RANDOM}_", function(str){files_prefix <<- rawToChar(str[1:(length(str)-1)])})
+  cmd_line = paste0(connection$dir, "/rboinc/bin/get_file_prefix.sh")
+  ssh_exec_wait(connection$connection, cmd_line, function(str){files_prefix <<- rawToChar(str[1:(length(str)-1)])})
   ssh_exec_wait(connection$connection, paste0("mv ", path, "/common.tar.xz ", path , "/", files_prefix, "common.tar.xz"))
   for(k in 0:(data_count-1)){
     old_name = paste0(path, "/data/", k, ".rbs")
@@ -40,7 +41,7 @@ make_unique_file_names = function(connection, path, data_count)
 
 stage_files = function(connection, path_to_archive, data_count)
 {
-  serv_path = upload_work(connection, archive)
+  serv_path = upload_work(connection, path_to_archive)
   files = make_unique_file_names(connection, serv_path, data_count)
   ssh_exec_wait(connection$connection, paste0("cd ", connection$dir, " && " , "./bin/stage_file ", serv_path))
   ssh_exec_wait(connection$connection, paste0("cd ", connection$dir, " && " , "./bin/stage_file ", serv_path, "/data"))
