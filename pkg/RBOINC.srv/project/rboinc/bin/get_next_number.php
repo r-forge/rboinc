@@ -1,19 +1,20 @@
 #! /usr/bin/env php
 <?php
-// Original file name: "get_batch_number"
+// Original file name: "get_next_number.php"
 // Created: 2021.02.04
-// Last modified: 2021.02.04
+// Last modified: 2021.02.05
 // License: Comming soon
 // Written by: Astaf'ev Sergey <seryymail@mail.ru>
 // This is a part of RBOINC R package.
 
-// Get unique number for creating batch of jobs.
+// Get unique number for saving file.
+// Usage:./get_next_number <counter file>
 
-if (!file_exists("config.xml")) {
-    error_exit("This script must be run in the BOINC project directory.\n");
+if($argc <> 2){
+    exit(2);
 }
 
-$fd = fopen("./rboinc/cache/batch_number.count", 'c+') or die();
+$fd = fopen(dirname(__FILE__) . "/../cache/" . $argv[1], 'c+') or die();
 
 if (flock($fd, LOCK_EX)){
     fseek($fd, 0, SEEK_END);
@@ -38,6 +39,6 @@ if (flock($fd, LOCK_EX)){
         fclose($fd);
     }
 }else {
-    error_exit("Can't lock file.\n");
+    exit(1);
 }
 ?>

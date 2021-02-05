@@ -1,0 +1,51 @@
+# Original file name: "createJob.R"
+# Created: 2021.02.04
+# Last modified: 2021.02.04
+# License: Comming soon
+# Written by: Astaf'ev Sergey <seryymail@mail.ru>
+# This is a part of RBOINC R package.
+
+#' @importFrom ssh ssh_exec_wait
+
+#' @export create_jobs
+
+register_jobs = function(connection, files)
+{
+  # job names
+  jobs = character(length(files$data))
+  # get unique job name
+  job_name = ""
+  ssh_exec_wait(connection$connection, paste0(connection$dir, "/rboinc/bin/get_job_name.sh"), function(str){job_name <<- rawToChar(str[1:(length(str)-1)])})
+  # Create file for job registartaion
+  job_file = ""
+  ssh_exec_wait(connection$connection, "date +\"%G_%m_%d_%I_%M_%S_%N\"", function(str){job_file <<- rawToChar(str[1:(length(str)-1)])})
+  job_file = paste0("~/.rboinc_cache/", job_file)
+  # Write file
+  cmd_list = character(length(files$data))
+  for(k in 1:length(files$data)){
+    jobs[k] = paste0(job_name, "_", k)
+    cmd_list[k] = paste0("echo --wu_name ", jobs[k], " ", files$common, " ", files$data[[k]], " >> ", job_file)
+  }
+  ssh_exec_wait(connection$connection, cmd_list)
+  # Registre jobs
+  ssh_exec_wait(connection$connection, paste0( "cd ", connection$dir, " && ./bin/create_work --appname rboinc --wu_template ./templates/rboinc_wu.xml --result_template ./templates/rboinc_result.xml --stdin <", job_file))
+  ssh_exec_wait(connection$connection, paste0("rm ", job_file))
+  return(jobs)
+}
+
+#' @title create_jobs
+#' @description Send job to BOINC server for parallel processing.
+#' @param connection a connection created by create_connection.
+#' @param work_func data processing function.
+#' @param data data for processing.  Must be a list!!!
+#' @param init_func initialization function.
+#' @param global_vars a list in the format \<variable name\>=\<value\>.
+#' @param packages a string vector with imported packages names.
+#' @param files a string vector with the filenames that should be available for jobs. !!! ACHTUNG: Works in a half-assed way!!!
+#' @return a string vector with jobs names
+create_jobs = function(connection, work_func, data, init_func = NULL, global_vars = NULL, packages = c(), files = c())
+{
+  ar = make_archive(work_func, data, init_func, global_vars, packages, files)
+  files = stage_files(con, ar, length(data))
+  return(register_jobs(connection, files))
+}

@@ -1,7 +1,7 @@
 Archive making			Almost working
 Connection creation via SSH	Working
 File uploading via SSH		Working
-Workunit creation via SSH	Not working
+Workunit creation via SSH	Working
 Result downloading via SSH	Not working
 
 VM loading			Working
