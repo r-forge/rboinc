@@ -1,2 +1,4 @@
 1. Copy all files in project to your BOINC project directory.
 2. Copy your VMs to ./apps/rboinc/<version>/<platforms>/.
+3. Use sample_trivial_validator as validator and sample_assimilator with
+   "--outdir download/rboinc" as assimilator for rboinc application.
