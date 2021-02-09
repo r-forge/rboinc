@@ -1,6 +1,6 @@
 # Original file name: "createJob.R"
 # Created: 2021.02.04
-# Last modified: 2021.02.08
+# Last modified: 2021.02.09
 # License: Comming soon
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -39,10 +39,48 @@ register_jobs = function(connection, files)
 #' @param work_func data processing function.
 #' @param data data for processing.  Must be a list!!!
 #' @param init_func initialization function.
-#' @param global_vars a list in the format \<variable name\>=\<value\>.
+#' @param global_vars a list in the format <variable name>=<value>.
 #' @param packages a string vector with imported packages names.
-#' @param files a string vector with the filenames that should be available for jobs. !!! ACHTUNG: Works in a half-assed way!!!
-#' @return a string vector with jobs names
+#' @param files a string vector with the filenames that should be available for jobs.
+#' @return a list with current states of jobs. This list contains the following fields:
+#' * jobs_name - a name of job on BOINC server;
+#' * results - computation results (NULL if computation still not complete);
+#' * jobs_status - jobs human-readable status for each job;
+#' * jobs_code - jobs status code, don't use this field;
+#' * status - computation status, may be:
+#'   * "initialization" - jobs have been submitted to the server, but their status was not requested by update_jobs_status.
+#'   * "computation" - BOINC is serves jobs.
+#'   * "complete" - computations complete, result downloaded.
+#'   * "error" - an error occurred where jobs processing.
+#' @examples
+#' # import library
+#' library(RBOINC.cl)
+#' # function for processing data
+#' fun = function(val)
+#' {
+#'   return(val * a + b)
+#' }
+#' # global variables
+#' glob_vars = list(a = 3)
+#' # initialize function
+#' init = function()
+#' {
+#'   b <<- 2
+#' }
+#' # data for processing
+#' data = list(matrix(rexp(15), 3,5), matrix(rexp(15), 3,5))
+#'
+#' # Create connection:
+#' con = create_connection("boincadm@boinc-server.local", dir = "~/projects/myproject", password = "0000")
+#' con
+#' # send jobs:
+#' jobs = create_jobs(con, fun, data, init, glob_vars)
+#' jobs
+#' # Get jobs status. Run this until status not equal "complete":
+#' jobs = update_jobs_status(con, jobs)
+#' jobs
+#' # Close connection:
+#' close_connection(con)
 create_jobs = function(connection, work_func, data, init_func = NULL, global_vars = NULL, packages = c(), files = c())
 {
   ar = make_archive(work_func, data, init_func, global_vars, packages, files)

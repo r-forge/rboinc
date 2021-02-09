@@ -1,6 +1,6 @@
 # Original file name: "makeArchive.R"
 # Created: 2021.02.03
-# Last modified: 2021.02.03
+# Last modified: 2021.02.09
 # License: Comming soon
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -59,7 +59,7 @@ make_archive = function(RBOINC_work_func, data, RBOINC_init_func = NULL, RBOINC_
   # Copy files
   files_dir = paste0(tmp_dir, "/files/")
   for(val in files){
-    file.copy(val, paste0(files_dir, val))
+    file.copy(val, files_dir, recursive=TRUE)
   }
   # write data
   data_dir = paste0(tmp_dir, "/data/")
