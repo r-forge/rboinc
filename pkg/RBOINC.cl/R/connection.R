@@ -18,7 +18,8 @@
 #' @param dir a rboinc project dir on server.
 #' @param password a string containing user password.
 #' @param keyfile path to private key file.
-#' @return a connection for use by other functions
+#' @return a connection (list) for use by other functions.
+#' @inherit create_jobs examples
 create_connection = function(host, dir = "~/projects/rboinc", password = NULL, keyfile = NULL)
 {
   connection = tryCatch({
@@ -44,6 +45,7 @@ create_connection = function(host, dir = "~/projects/rboinc", password = NULL, k
 #' @title close_connection
 #' @description Disconnect connection.
 #' @param connection a connection created by create_connection
+#' @inherit create_jobs exampless
 close_connection = function(connection)
 {
   return(ssh_disconnect(connection$connection))

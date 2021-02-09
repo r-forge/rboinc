@@ -1,4 +1,4 @@
-Archive making			Almost working
+Archive making			Working
 Connection creation via SSH	Working
 File uploading via SSH		Working
 Workunit creation via SSH	Working
