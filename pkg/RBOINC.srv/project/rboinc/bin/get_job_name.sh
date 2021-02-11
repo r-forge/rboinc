@@ -6,6 +6,5 @@
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
 
-# Get unique number for saving file.
-TMP=`dirname ${BASH_SOURCE[0]}`/get_next_number.php
-echo rboinc_`date +%G%m%d%I%M%S.%N`.`$TMP job_number.count`
+# Get unique name for job file.
+echo '<?php include("'`dirname ${BASH_SOURCE[0]}`'/prefix.inc");echo get_job_name();?>' | php
