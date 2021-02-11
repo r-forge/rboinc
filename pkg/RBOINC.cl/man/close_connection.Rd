@@ -12,3 +12,33 @@ close_connection(connection)
 \description{
 Disconnect connection.
 }
+\examples{
+# import library
+library(RBOINC.cl)
+# function for processing data
+fun = function(val)
+{
+  return(val * a + b)
+}
+# global variables
+glob_vars = list(a = 3)
+# initialize function
+init = function()
+{
+  b <<- 2
+}
+# data for processing
+data = list(matrix(rexp(15), 3,5), matrix(rexp(15), 3,5))
+
+# Create connection:
+con = create_connection("boincadm@boinc-server.local", dir = "~/projects/myproject", password = "0000")
+con
+# send jobs:
+jobs = create_jobs(con, fun, data, init, glob_vars)
+jobs
+# Get jobs status. Run this until status not equal "complete":
+jobs = update_jobs_status(con, jobs)
+jobs
+# Close connection:
+close_connection(con)
+}

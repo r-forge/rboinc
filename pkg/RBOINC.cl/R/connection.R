@@ -45,7 +45,7 @@ create_connection = function(host, dir = "~/projects/rboinc", password = NULL, k
 #' @title close_connection
 #' @description Disconnect connection.
 #' @param connection a connection created by create_connection
-#' @inherit create_jobs exampless
+#' @inherit create_jobs examples
 close_connection = function(connection)
 {
   return(ssh_disconnect(connection$connection))
