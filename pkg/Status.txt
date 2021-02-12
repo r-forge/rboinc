@@ -7,7 +7,7 @@ Result downloading via SSH	Working
 VM loading			Working
 Workunit processing		Working
 
-Connection creation via HTTP	Plans
-File uploading via HTTP		Plans
-Workunit creation via HTTP	Plans
-Result downloading via HTTP	Plans
+Connection creation via HTTP	Working
+File uploading via HTTP		Not working
+Workunit creation via HTTP	Not working
+Result downloading via HTTP	Not working

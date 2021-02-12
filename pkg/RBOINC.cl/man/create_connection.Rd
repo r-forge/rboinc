@@ -5,26 +5,36 @@
 \title{create_connection}
 \usage{
 create_connection(
-  host,
+  server,
   dir = "~/projects/rboinc",
+  username,
   password = NULL,
   keyfile = NULL
 )
 }
 \arguments{
-\item{host}{a ssh server string of the form <user@>hostname<:@port>.}
+\item{server}{a ssh or http server string of the form <protocol>://<server name>:<port>. Examples:
+\itemize{
+\item "ssh://boinc-server.local" - for ssh connection;
+\item "http://boinc-server.local" - for http connection;
+\item "https://boinc-server.local" - for https connection.
+}}
 
-\item{dir}{a rboinc project dir on server.}
+\item{dir}{a rboinc project dir on server. For ssh connection, this is the directory where the BOINC project is located.
+For http/https connection, this is the full path to the project page (without the server name).}
+
+\item{username}{a string containing username. For ssh connection, this is user login. For http/https connection, this is
+user email.}
 
 \item{password}{a string containing user password.}
 
-\item{keyfile}{path to private key file.}
+\item{keyfile}{path to private key file. For ssh connection only.}
 }
 \value{
 a connection (list) for use by other functions.
 }
 \description{
-Create a ssh session.
+Create a ssh or http/https connection to server.
 }
 \examples{
 # import library
@@ -45,7 +55,8 @@ init = function()
 data = list(matrix(rexp(15), 3,5), matrix(rexp(15), 3,5))
 
 # Create connection:
-con = create_connection("boincadm@boinc-server.local", dir = "~/projects/myproject", password = "0000")
+#con = create_connection("ssh://boinc-server.local", dir = "~/projects/myproject", username = "boincadm", password = "0000") # ssh
+#con = create_connection("http://boinc-server.local", dir = "myproject", username = "submitter@example.com", password = "000000")# http
 con
 # send jobs:
 jobs = create_jobs(con, fun, data, init, glob_vars)
