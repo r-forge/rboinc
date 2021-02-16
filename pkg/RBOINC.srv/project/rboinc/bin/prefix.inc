@@ -41,7 +41,7 @@ function get_next_number($file_name)
 function get_file_prefix()
 {
   $now = DateTime::createFromFormat('U.u', microtime(true));
-  return($now->format("Y_m_d_h_i_s_u") . "_" . get_next_number("file_number.count"));
+  return($now->format("Y_m_d_h_i_s_u") . "_" . get_next_number("file_number.count") . "_");
 }
 
 function get_job_name()
