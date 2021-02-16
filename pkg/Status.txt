@@ -8,6 +8,6 @@ VM loading			Working
 Workunit processing		Working
 
 Connection creation via HTTP	Working
-File uploading via HTTP		Not working
+File uploading via HTTP		Working
 Workunit creation via HTTP	Not working
 Result downloading via HTTP	Not working
