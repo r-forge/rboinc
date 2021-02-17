@@ -1,7 +1,7 @@
 <?php
-// Original file name: "rboinc_submit_jobs.php"
+// Original file name: "rboinc_upload_archive.php"
 // Created: 2021.02.15
-// Last modified: 2021.02.16
+// Last modified: 2021.02.17
 // License: Comming soon
 // Written by: Astaf'ev Sergey <seryymail@mail.ru>
 // This is a part of RBOINC R package.
@@ -11,10 +11,17 @@ require_once("../inc/util.inc");
 require_once(dirname(__FILE__) . "/../../rboinc/bin/prefix.inc");
 
 $user = get_logged_in_user();
+
 // Check user privileges
 $user_submit = BoincUserSubmit::lookup_userid($user->id);
 if (!$user_submit){
-  echo 1;
+  echo "Access denied.";
+  exit(0);
+}
+
+// Check file uploading
+if(!isset($_FILES['archive'])){
+  echo "This script only for low-level file uploading.";
   exit(0);
 }
 
@@ -28,7 +35,7 @@ mkdir($upload_dir, 0777, true);
 
 $upload_file = $upload_dir . "/archive.tar.xz";
 
-if(move_uploaded_file($_FILES['userfile']['tmp_name'], $upload_file)){
+if(move_uploaded_file($_FILES['archive']['tmp_name'], $upload_file)){
   // Unpack archive
   exec("tar -xf $upload_file -C $upload_dir");
   unlink($upload_file);
@@ -36,17 +43,27 @@ if(move_uploaded_file($_FILES['userfile']['tmp_name'], $upload_file)){
   rename($upload_dir . "/common.tar.xz", $upload_dir ."/" . $file_prefix . "common.tar.xz");
   chdir($upload_dir . "/data");
   exec("for f in * ; do mv -- \"\$f\" \"" . $file_prefix . "\$f\" ; done");
-  // Get jobs count
+  // Get data files count
   $data_count = count(glob($upload_dir . "/data/*"));
+  // Make output xml
+  $result_xml = "<staged_files>\n";
+  $result_xml .= "  <common>" . $file_prefix . "common.tar.xz</common>\n";
+  $result_xml .= "  <data>\n";
+  for($i = 0; $i < $data_count; $i++){
+    $result_xml .= "<val_" . $i . ">" . $file_prefix . $i . ".rbs</val_" . $i . ">\n";
+  }
+  $result_xml .= "  </data>\n";
+  $result_xml .= "</staged_files>";
   // Stage files
   chdir($project_dir);
   exec("bin/stage_file " . $upload_dir . "/" . $file_prefix . "common.tar.xz");
   exec("bin/stage_file " . $upload_dir . "/data");
   rmdir($upload_dir . "/data");
   rmdir($upload_dir);
-  echo 0;
+  header("Content-type: text/xml");
+  echo $result_xml;
 } else {
-  echo 2;
+  echo "Error";
 }
 
 ?>

@@ -25,6 +25,6 @@
     </platform>
     <app>
         <name>rboinc</name>
-        <user_friendly_name>RBOINC server part</user_friendly_name>
+        <user_friendly_name>RBOINC</user_friendly_name>
     </app>
 </boinc>
