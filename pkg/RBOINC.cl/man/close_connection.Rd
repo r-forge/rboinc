@@ -37,7 +37,7 @@ con
 # send jobs:
 jobs = create_jobs(con, fun, data, init, glob_vars)
 jobs
-# Get jobs status. Run this until status not equal "complete":
+# Get jobs status. Run this until status not equal "done":
 jobs = update_jobs_status(con, jobs)
 jobs
 # Close connection:

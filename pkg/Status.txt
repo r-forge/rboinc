@@ -9,5 +9,5 @@ Workunit processing		Working
 
 Connection creation via HTTP	Working
 File uploading via HTTP		Working
-Workunit creation via HTTP	Not working
+Workunit creation via HTTP	Working
 Result downloading via HTTP	Not working
