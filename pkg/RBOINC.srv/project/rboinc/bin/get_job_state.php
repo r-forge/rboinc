@@ -2,7 +2,7 @@
 <?php
 // Original file name: "get_next_number.php"
 // Created: 2021.02.08
-// Last modified: 2021.02.08
+// Last modified: 2021.02.18
 // License: Comming soon
 // Written by: Astaf'ev Sergey <seryymail@mail.ru>
 // This is a part of RBOINC R package.
@@ -41,7 +41,7 @@ if(!$state){
 }
 
 if($state->error_mask){
-    echo "Job error: " . $state->error_mask;
+    echo "error:" . $state->error_mask;
     exit(5);
 }
 
@@ -55,6 +55,6 @@ if($state->assimilate_state == 2){
     exit(0);
 }
 
-echo "Job in processing.";
+echo "in_progress";
 exit(6);
 ?>

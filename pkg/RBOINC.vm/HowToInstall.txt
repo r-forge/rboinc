@@ -1,0 +1,7 @@
+0. Install Vbox Guest Additionals and R in your VM.
+1. Create regular user in VM.
+2. Make autologin for this user after boot.
+3. Add auto mounting at booting time vboxsf "shared" direcory in <user_dir>/shared
+4. Add auto mounting at booting time tmpfs in <user_dir>/workdir
+5. Add boinc_app.sh to user .bashrc
+

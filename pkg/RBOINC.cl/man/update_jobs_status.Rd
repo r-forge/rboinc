@@ -21,9 +21,10 @@ a list with current states of jobs. This list contains the following fields:
 \item status - computation status, may be:
 \itemize{
 \item "initialization" - jobs have been submitted to the server, but their status was not requested by update_jobs_status.
-\item "computation" - BOINC is serves jobs.
-\item "complete" - computations complete, result downloaded.
+\item "in_progress" - BOINC is serves jobs.
+\item "done" - computations complete, result downloaded.
 \item "error" - an error occurred where jobs processing.
+\item "queued" - job in queue (only for http/https connections).
 }
 }
 }
@@ -55,7 +56,7 @@ con
 # send jobs:
 jobs = create_jobs(con, fun, data, init, glob_vars)
 jobs
-# Get jobs status. Run this until status not equal "complete":
+# Get jobs status. Run this until status not equal "done":
 jobs = update_jobs_status(con, jobs)
 jobs
 # Close connection:
