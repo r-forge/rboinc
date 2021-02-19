@@ -1,6 +1,6 @@
 # Original file name: "getResult.R"
 # Created: 2021.02.08
-# Last modified: 2021.02.18
+# Last modified: 2021.02.19
 # License: Comming soon
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -22,7 +22,14 @@ download_result = function(connection, file, job_name)
   if(connection$type == "ssh"){
     scp_download(connection$connection, paste0(connection$dir, "/", file), tmp_dir, verbose = FALSE)
   }else if(connection$type == "http"){
-    GET(file, write_disk(file_name, overwrite=TRUE))
+    for(k in 1:5){
+      donwload_res = GET(file, write_disk(file_name, overwrite=TRUE))
+      if (donwload_res$status_code == 404){
+        Sys.sleep(1)
+      } else {
+        break
+      }
+    }
   }else{
     return(NULL)
   }
@@ -72,7 +79,7 @@ update_jobs_status = function(connection, jobs_status)
       }else{
         if (job_status$exit_status == 0){
           job_state = 0
-          mess = paste0(connection$url, "/download/", jobs_status$jobs_name[k])
+          mess = paste0(connection$url, "/download/rboinc/", jobs_status$jobs_name[k])
         }
       }
     }else{
