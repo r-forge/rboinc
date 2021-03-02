@@ -1,7 +1,7 @@
 <?php
 // Original file name: "rboinc_upload_archive.php"
 // Created: 2021.02.15
-// Last modified: 2021.02.17
+// Last modified: 2021.03.02
 // License: Comming soon
 // Written by: Astaf'ev Sergey <seryymail@mail.ru>
 // This is a part of RBOINC R package.
@@ -31,7 +31,8 @@ $upload_dir = dirname(__FILE__) . "/../../rboinc/uploads/" . $file_prefix;
 $project_dir = dirname(__FILE__) . "/../../";
 
 umask(0000);
-mkdir($upload_dir, 0777, true);
+mkdir($upload_dir, 0775, true);
+umask(0022);
 
 $upload_file = $upload_dir . "/archive.tar.xz";
 

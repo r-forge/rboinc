@@ -2,3 +2,4 @@
 2. Copy your VMs to ./apps/rboinc/<version>/<platforms>/.
 3. Use sample_trivial_validator as validator and sample_assimilator with
    "--outdir download/rboinc" as assimilator for rboinc application.
+4. Run "chmod 775 rboinc/cache/" and "chmod 775 rboinc/uploads/" in your project dir.
