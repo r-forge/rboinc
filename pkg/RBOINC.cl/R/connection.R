@@ -43,7 +43,7 @@ create_connection = function(server, dir = "~/projects/rboinc", username, passwo
     if(is.na(port)){
       return(connect_ssh(paste0(username, "@", address), dir, password, keyfile))
     } else{
-      return(connect_ssh(paste0(username, "@", address, ":@", port), dir, password, keyfile))
+      return(connect_ssh(paste0(username, "@", address, ":", port), dir, password, keyfile))
     }
   } else if((protocol == "http") || (protocol == "https")){
     auth_page = paste0(protocol, "://", address)
