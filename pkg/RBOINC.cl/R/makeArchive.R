@@ -75,7 +75,7 @@ make_archive = function(RBOINC_work_func, data, RBOINC_init_func = NULL, RBOINC_
   archive_path = paste0(tempfile(), ".tar.xz")
   old_wd = getwd()
   setwd(tmp_dir)
-  tar(paste0(tmp_dir, "/common.tar.xz"),c("code.rbs", "code.R", "files"))
+  tar(paste0(tmp_dir, "/common.tar.xz"),c("code.rbs", "code.R", "files"), compression="xz")
   tar(archive_path, c("common.tar.xz", "data"), compression="xz")
   setwd(old_wd)
   # delete files and return path to archive
