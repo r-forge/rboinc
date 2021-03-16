@@ -1,6 +1,6 @@
 # Original file name: "getResult.R"
 # Created: 2021.02.08
-# Last modified: 2021.02.19
+# Last modified: 2021.03.16
 # License: Comming soon
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -34,10 +34,12 @@ download_result = function(connection, file, job_name)
     return(NULL)
   }
   print(file_name)
-  load(file_name)
+  # fix for potential vulnerability
+  tmpenv = new.env()
+  load(file_name, tmpenv)
   unlink(file_name)
   # variable result was loaded from tmp file
-  return(result)
+  return(tmpenv$result)
 }
 
 #' @title update_jobs_status
