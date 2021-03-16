@@ -1,11 +1,11 @@
 # Original file name: "makeArchive.R"
 # Created: 2021.02.03
-# Last modified: 2021.02.09
+# Last modified: 2021.03.16
 # License: Comming soon
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
 
-generate_r_script = function(func, init, glob_vars, packages)
+generate_r_script = function(func, original_work_func_name, init, glob_vars, packages)
 {
   str = ""
   for(val in packages){
@@ -20,6 +20,7 @@ generate_r_script = function(func, init, glob_vars, packages)
   if(!is.null(init)){
     str = paste0(str, "RBOINC_init_func()\n")
   }
+  str = paste0(str, original_work_func_name, " = RBOINC_work_func\n")
   str = paste0(str, "result = RBOINC_work_func(RBOINC_data)\n")
   str = paste0(str, "setwd(\"../\")\n")
   str = paste0(str, "save(result, file = \"result.rbs\")\n")
@@ -36,7 +37,7 @@ make_dirs = function()
   return(tmp_dir)
 }
 
-make_archive = function(RBOINC_work_func, data, RBOINC_init_func = NULL, RBOINC_global_vars = NULL, packages = c(), files = c())
+make_archive = function(RBOINC_work_func, original_work_func_name, data, RBOINC_init_func = NULL, RBOINC_global_vars = NULL, packages = c(), files = c())
 {
   if(!is.list(data)){
     return(NULL)
@@ -54,7 +55,7 @@ make_archive = function(RBOINC_work_func, data, RBOINC_init_func = NULL, RBOINC_
   save(list = obj_list, file = paste0(tmp_dir, "/code.rbs"))
   # save code
   out = file(paste0(tmp_dir, "/code.R"))
-  writeLines(generate_r_script(RBOINC_work_func, RBOINC_init_func, RBOINC_global_vars, packages), out)
+  writeLines(generate_r_script(RBOINC_work_func, original_work_func_name, RBOINC_init_func, RBOINC_global_vars, packages), out)
   close(out)
   # Copy files
   files_dir = paste0(tmp_dir, "/files/")

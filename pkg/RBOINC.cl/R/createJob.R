@@ -1,6 +1,6 @@
 # Original file name: "createJob.R"
 # Created: 2021.02.04
-# Last modified: 2021.02.18
+# Last modified: 2021.03.16
 # License: Comming soon
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -118,13 +118,13 @@ register_jobs = function(connection, files)
 create_jobs = function(connection, work_func, data, init_func = NULL, global_vars = NULL, packages = c(), files = c())
 {
   if(connection$type == "ssh"){
-    ar = make_archive(work_func, data, init_func, global_vars, packages, files)
+    ar = make_archive(work_func, deparse(substitute(work_func)), data, init_func, global_vars, packages, files)
     files = stage_files(con, ar, length(data))
     jobs = register_jobs(connection, files)
     ret = list(jobs_name = jobs, results = vector("list", length = length(jobs)), jobs_status = character(length(files$data)), jobs_code = rep(-1, length(files$data)), status = "initialization")
     return(ret)
   } else if (connection$type == "http"){
-    ar = make_archive(work_func, data, init_func, global_vars, packages, files)
+    ar = make_archive(work_func, deparse(substitute(work_func)), data, init_func, global_vars, packages, files)
     # Send archive to server
     response = POST(url = paste0(connection$url, "/rboinc_upload_archive.php"), body = list(archive = upload_file(ar)), config = content_type("multipart/form-data"), handle = connection$handle)
     files = as_list(content(response))
