@@ -33,7 +33,6 @@ download_result = function(connection, file, job_name)
   }else{
     return(NULL)
   }
-  print(file_name)
   # fix for potential vulnerability
   tmpenv = new.env()
   load(file_name, tmpenv)
