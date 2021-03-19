@@ -1,6 +1,6 @@
 # Original file name: "createJob.R"
 # Created: 2021.02.04
-# Last modified: 2021.03.16
+# Last modified: 2021.03.19
 # License: Comming soon
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -102,6 +102,9 @@ register_jobs = function(connection, files)
 #' }
 #' # data for processing
 #' data = list(matrix(rexp(15), 3,5), matrix(rexp(15), 3,5))
+#'
+#' # Test jobs before sending
+#' jobs_t = test_jobs(fun, data, init, glob_vars)
 #'
 #' # Create connection:
 #' #con = create_connection("ssh://boinc-server.local", dir = "~/projects/myproject", username = "boincadm", password = "0000") # ssh
