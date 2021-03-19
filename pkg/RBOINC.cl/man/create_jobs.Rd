@@ -67,6 +67,9 @@ init = function()
 # data for processing
 data = list(matrix(rexp(15), 3,5), matrix(rexp(15), 3,5))
 
+# Test jobs before sending
+jobs_t = test_jobs(fun, data, init, glob_vars)
+
 # Create connection:
 #con = create_connection("ssh://boinc-server.local", dir = "~/projects/myproject", username = "boincadm", password = "0000") # ssh
 #con = create_connection("http://boinc-server.local", dir = "myproject", username = "submitter@example.com", password = "000000")# http
