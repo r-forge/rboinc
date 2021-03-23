@@ -3,6 +3,6 @@
 3. Use sample_trivial_validator as validator and sample_assimilator with
    "--outdir download/rboinc" as assimilator for rboinc application.
 4. Run "chmod 775 rboinc/cache/" and "chmod 775 rboinc/uploads/" in your project dir.
-5. Set umask for www-data to 002 (see /etc/apache2/envvars).
-6. Add www-data group for all ssh rboinc users.
+5. Set umask for apache2 user to 002 (see /etc/apache2/envvars).
+6. Change apache2 user and group to your boinc admininstrator user and group.
 7. Run "chmod +x *" in <project>/rboinc/bin directory.
