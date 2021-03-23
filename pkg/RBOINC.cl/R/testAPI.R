@@ -35,8 +35,34 @@ test_jobs = function(work_func, data, init_func = NULL, global_vars = NULL, pack
     printf("Error\n")
     return(NULL)
   }
+
+  # Workaround for bsdtar 3.3.2 bug. For some tar.xz arhives bsdtar 3.3.2 freezes when unpacking.
+  tar_version = tryCatch({
+      untar("", extras = "--version", list = TRUE)
+    },error=function(cond){
+      return("unknown_version")
+    }
+  )
+  tar_version = substr(tar_version, 1, 12)
+  if(tar_version == "bsdtar 3.3.2"){
+    printf("!!! Warning: bsdtar 3.3.2 found !!! Installing workaround...\t")
+    decompress = function(file, exdir){
+      file.copy(file, exdir)
+      bname = basename(file)
+      ret = system(paste0("xz -d -qq ", exdir, "/", bname))
+      if(ret != 0){
+        return(ret)
+      }
+      ret = system(paste0("tar -xf ", exdir, "/", substr(bname, 1, nchar(bname) - 3), " -C ", exdir))
+      return (ret)
+    }
+    printf("OK.\n")
+  } else{
+    decompress = untar
+  }
+
   printf("Testing archive unpacking...\t")
-  if(untar(ar, exdir = tmpdir) == 0){
+  if(decompress(ar, exdir = tmpdir) == 0){
     printf("OK: founded files:\n")
     for(val in list.files(tmpdir, full.names = TRUE, recursive = TRUE)){
       printf("\t%s\n", val)
@@ -59,7 +85,7 @@ test_jobs = function(work_func, data, init_func = NULL, global_vars = NULL, pack
     printf("Running job %s in %s ", val, t)
     dir.create(t)
     file.copy(paste0(tmpdir, "/data/", val), paste0(t, "/data.rbs"))
-    untar(paste0(tmpdir, "/common.tar.xz"), exdir = t)
+    decompress(paste0(tmpdir, "/common.tar.xz"), exdir = t)
     dir.create(paste0(t, "/files"), FALSE)
     oldwd = getwd()
     setwd(t)
