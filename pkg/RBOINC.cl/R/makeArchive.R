@@ -9,7 +9,8 @@ generate_r_script = function(func, original_work_func_name, init, glob_vars, pac
 {
   str = ""
   for(val in packages){
-    str = paste0(str, "library(", val, ")\n")
+    str = paste0(str, "if(!require(", val, ")){\n\tinstall.packages(\"", val, "\", repos = c('http://rforge.net', 'http://cran.rstudio.org'))\n",
+                 "\tlibrary(", val, ")\n}\n")
   }
   str = paste0(str, "load(\"code.rbs\")\n")
   str = paste0(str, "load(\"data.rbs\")\n")
