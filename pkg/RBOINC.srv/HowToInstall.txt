@@ -6,3 +6,5 @@
 5. Set umask for apache2 user to 002 (see /etc/apache2/envvars).
 6. Change apache2 user and group to your boinc admininstrator user and group.
 7. Run "chmod +x *" in <project>/rboinc/bin directory.
+8. Install R and RInside package.
+9. Copy validator dir into BOINC sources, change work dir to validator dir and run "make".

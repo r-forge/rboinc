@@ -27,20 +27,10 @@ test_jobs(
 \item{files}{a string vector with the filenames that should be available for jobs.}
 }
 \value{
-a list with current states of jobs. This list contains the following fields:
+a list with states of jobs. This list contains the following fields:
 \itemize{
-\item jobs_name - a name of job on BOINC server;
-\item results - computation results (NULL if computation still not complete);
-\item jobs_status - jobs human-readable status for each job;
-\item jobs_code - jobs status code, don't use this field;
-\item status - computation status, may be:
-\itemize{
-\item "initialization" - jobs have been submitted to the server, but their status was not requested by update_jobs_status.
-\item "in_progress" - BOINC is serves jobs.
-\item "done" - computations complete, result downloaded.
-\item "error" - an error occurred where jobs processing.
-\item "queued" - job in queue (only for http/https connections).
-}
+\item log - Rscript output;
+\item result - computation result.
 }
 }
 \description{
