@@ -45,7 +45,7 @@ test_jobs = function(work_func, data, init_func = NULL, global_vars = NULL, pack
   )
   tar_version = substr(tar_version, 1, 12)
   if(tar_version == "bsdtar 3.3.2"){
-    printf("!!! Warning: bsdtar 3.3.2 found !!! Installing workaround...\t")
+    printf("!!!Warning: bsdtar 3.3.2 detected!!! Installing workaround...\t")
     decompress = function(file, exdir){
       file.copy(file, exdir)
       bname = basename(file)
@@ -80,8 +80,11 @@ test_jobs = function(work_func, data, init_func = NULL, global_vars = NULL, pack
     return(NULL)
   }
   result = list()
+  job_dir = tempfile()
+  dir.create(job_dir)
+  dir.create(paste0(job_dir, "/shared"))
   for(val in jobs){
-    t = tempfile()
+    t = paste0(job_dir, "/", basename(val))
     printf("Running job %s in %s ", val, t)
     dir.create(t)
     file.copy(paste0(tmpdir, "/data/", val), paste0(t, "/data.rbs"))
@@ -91,7 +94,7 @@ test_jobs = function(work_func, data, init_func = NULL, global_vars = NULL, pack
     setwd(t)
     log = system(paste0("Rscript ", t, "/code.R "), TRUE)
     tmpenv = new.env()
-    obj_list = load("result.rbs", tmpenv)
+    obj_list = load(paste0(job_dir, "/shared/result.rbs"), tmpenv)
     if((length(obj_list) == 1) && (obj_list[1] == "result")){
       result[[length(result)+1]] = list(log = log, result = tmpenv$result)
       printf("OK\n")
