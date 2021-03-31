@@ -24,7 +24,7 @@ generate_r_script = function(func, original_work_func_name, init, glob_vars, pac
   str = paste0(str, original_work_func_name, " = RBOINC_work_func\n")
   str = paste0(str, "result = RBOINC_work_func(RBOINC_data)\n")
   str = paste0(str, "setwd(\"../../shared/\")\n")
-  str = paste0(str, "save(result, file = \"result.rbs\")\n")
+  str = paste0(str, "save(result, file = \"result.rbs\", compress = \"xz\")\n")
   return(str)
 }
 
