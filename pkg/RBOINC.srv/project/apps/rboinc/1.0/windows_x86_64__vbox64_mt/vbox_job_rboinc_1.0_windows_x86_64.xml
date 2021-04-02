@@ -1,5 +1,5 @@
 <vbox_job>
-  <memory_size_mb>4096</memory_size_mb>
+  <memory_size_mb>8192</memory_size_mb>
   <os_name>Gentoo_64</os_name>
   <enable_cache_disk>1</enable_cache_disk>
   <enable_shared_directory/>

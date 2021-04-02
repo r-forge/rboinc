@@ -1,7 +1,7 @@
 <?php
 // Original file name: "rboinc_upload_archive.php"
 // Created: 2021.02.15
-// Last modified: 2021.03.02
+// Last modified: 2021.04.02
 // License: Comming soon
 // Written by: Astaf'ev Sergey <seryymail@mail.ru>
 // This is a part of RBOINC R package.
@@ -15,6 +15,7 @@ $user = get_logged_in_user();
 // Check user privileges
 $user_submit = BoincUserSubmit::lookup_userid($user->id);
 if (!$user_submit){
+  header('HTTP/1.0 403 Forbidden');
   echo "Access denied.";
   exit(0);
 }

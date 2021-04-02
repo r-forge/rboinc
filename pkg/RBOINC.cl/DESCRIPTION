@@ -1,14 +1,14 @@
 Package: RBOINC.cl
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.0
+Title: 
+Version: 0.0.0.20210402
 Authors@R: 
-    person(given = "First",
-           family = "Last",
+    person(given = "Sergey",
+           family = "Astaf'ev",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: Comming soon
+           email = "seryymail@mail.ru",
+           comment = c(ORCID = "https://orcid.org/0000-0002-4486-798X"))
+Description: 
+License: BSD_3_clause + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
