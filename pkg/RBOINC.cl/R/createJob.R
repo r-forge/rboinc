@@ -1,9 +1,12 @@
 # Original file name: "createJob.R"
 # Created: 2021.02.04
 # Last modified: 2021.03.19
-# License: Comming soon
+# License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
+# Copyright (c) 2021 Karelian Research Centre of the RAS:
+# Institute of Applied Mathematical Research
+# All rights reserved
 
 #' @importFrom ssh ssh_exec_wait
 #' @importFrom httr POST
