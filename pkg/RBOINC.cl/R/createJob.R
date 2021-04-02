@@ -79,15 +79,15 @@ register_jobs = function(connection, files)
 #' @param files a string vector with the filenames that should be available for jobs.
 #' @return a list with current states of jobs. This list contains the following fields:
 #' * jobs_name - a name of job on BOINC server;
-#' * results - computation results (NULL if computation still not complete);
+#' * results - computation results (NULL if computation is still incomplete);
 #' * jobs_status - jobs human-readable status for each job;
 #' * jobs_code - jobs status code, don't use this field;
 #' * status - computation status, may be:
 #'   * "initialization" - jobs have been submitted to the server, but their status was not requested by update_jobs_status.
-#'   * "in_progress" - BOINC is serves jobs.
-#'   * "done" - computations complete, result downloaded.
-#'   * "error" - an error occurred where jobs processing.
-#'   * "queued" - job in queue (only for http/https connections).
+#'   * "in_progress" - BOINC serves jobs.
+#'   * "done" - computations are complete, the result was downloaded.
+#'   * "error" - an error occurred during the job processing.
+#'   * "queued" - job in the queue (only for http/https connections).
 #'
 #' When errors occur, the following exceptions may be thrown:
 #' * for http connections:
