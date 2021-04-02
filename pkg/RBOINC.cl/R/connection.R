@@ -21,17 +21,17 @@
 #' @export close_connection
 
 #' @title create_connection
-#' @description Create a ssh or http/https connection to server.
-#' @param server a ssh or http server string of the form <protocol>://<server name>:<port>. Examples:
+#' @description Create an ssh or http/https connection to the BOINC server.
+#' @param server an ssh or http server URL of the form <protocol>://<server name>:<port>. Examples:
 #' * "ssh://boinc-server.local" - for ssh connection;
 #' * "http://boinc-server.local" - for http connection;
 #' * "https://boinc-server.local" - for https connection.
-#' @param dir a rboinc project dir on server. For ssh connection, this is the directory where the BOINC project is located.
+#' @param dir a rboinc project directory on the server. For ssh connection, this is the directory where the BOINC project is located.
 #' For http/https connection, this is the full path to the project page (without the server name).
-#' @param username a string containing username. For ssh connection, this is user login. For http/https connection, this is
-#' user email.
+#' @param username a string containing username. For ssh connection, this is the user login. For http/https connection, this is
+#' the user email.
 #' @param password a string containing user password.
-#' @param keyfile path to private key file. For ssh connection only.
+#' @param keyfile path to a private key file. For ssh connection only.
 #' @return a connection (list) for use by other functions.
 #'
 #' When errors occur, the following exceptions may be thrown:
@@ -110,7 +110,7 @@ connect_ssh = function(host, dir = "~/projects/rboinc", password = NULL, keyfile
 }
 
 #' @title close_connection
-#' @description Disconnect connection.
+#' @description Disconnect from the server.
 #' @param connection a connection created by create_connection
 #' @inherit create_jobs examples
 close_connection = function(connection)
