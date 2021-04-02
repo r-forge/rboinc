@@ -8,7 +8,7 @@
 # Institute of Applied Mathematical Research
 # All rights reserved
 
-generate_r_script = function(func, original_work_func_name, init, glob_vars, packages)
+generate_r_script = function(original_work_func_name, init, glob_vars, packages)
 {
   str = ""
   for(val in packages){
@@ -59,7 +59,7 @@ make_archive = function(RBOINC_work_func, original_work_func_name, data, RBOINC_
   save(list = obj_list, file = paste0(tmp_dir, "/code.rbs"))
   # save code
   out = file(paste0(tmp_dir, "/code.R"))
-  writeLines(generate_r_script(RBOINC_work_func, original_work_func_name, RBOINC_init_func, RBOINC_global_vars, packages), out)
+  writeLines(generate_r_script(original_work_func_name, RBOINC_init_func, RBOINC_global_vars, packages), out)
   close(out)
   # Copy files
   files_dir = paste0(tmp_dir, "/files/")
