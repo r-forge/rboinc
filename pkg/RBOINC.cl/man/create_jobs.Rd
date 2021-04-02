@@ -45,6 +45,15 @@ a list with current states of jobs. This list contains the following fields:
 \item "queued" - job in queue (only for http/https connections).
 }
 }
+
+When errors occur, the following exceptions may be thrown:
+\itemize{
+\item for http connections:
+\itemize{
+\item You can not create jobs.
+\item BOINC server error: "<server message>".
+}
+}
 }
 \description{
 Send job to BOINC server for parallel processing.

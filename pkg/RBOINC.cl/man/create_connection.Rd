@@ -13,22 +13,22 @@ create_connection(
 )
 }
 \arguments{
-\item{server}{a ssh or http server string of the form <protocol>://<server name>:<port>. Examples:
+\item{server}{an ssh or http server URL of the form <protocol>://<server name>:<port>. Examples:
 \itemize{
 \item "ssh://boinc-server.local" - for ssh connection;
 \item "http://boinc-server.local" - for http connection;
 \item "https://boinc-server.local" - for https connection.
 }}
 
-\item{dir}{a rboinc project dir on server. For ssh connection, this is the directory where the BOINC project is located.
+\item{dir}{a rboinc project directory on the server. For ssh connection, this is the directory where the BOINC project is located.
 For http/https connection, this is the full path to the project page (without the server name).}
 
-\item{username}{a string containing username. For ssh connection, this is user login. For http/https connection, this is
-user email.}
+\item{username}{a string containing username. For ssh connection, this is the user login. For http/https connection, this is
+the user email.}
 
 \item{password}{a string containing user password.}
 
-\item{keyfile}{path to private key file. For ssh connection only.}
+\item{keyfile}{path to a private key file. For ssh connection only.}
 }
 \value{
 a connection (list) for use by other functions.
@@ -53,7 +53,7 @@ When errors occur, the following exceptions may be thrown:
 }
 }
 \description{
-Create a ssh or http/https connection to server.
+Create an ssh or http/https connection to the BOINC server.
 }
 \examples{
 # import library

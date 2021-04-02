@@ -10,7 +10,7 @@ close_connection(connection)
 \item{connection}{a connection created by create_connection}
 }
 \description{
-Disconnect connection.
+Disconnect from the server.
 }
 \examples{
 # import library

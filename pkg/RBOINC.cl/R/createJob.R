@@ -92,7 +92,7 @@ register_jobs = function(connection, files)
 #' When errors occur, the following exceptions may be thrown:
 #' * for http connections:
 #'   * You can not create jobs.
-#'   * error messages from BOINC server
+#'   * BOINC server error: "<server message>".
 #' @examples
 #' # import library
 #' library(RBOINC.cl)
@@ -138,7 +138,7 @@ create_jobs = function(connection, work_func, data, init_func = NULL, global_var
     ar = make_archive(work_func, deparse(substitute(work_func)), data, init_func, global_vars, packages, files)
     # Send archive to server
     response = POST(url = paste0(connection$url, "/rboinc_upload_archive.php"), body = list(archive = upload_file(ar)), config = content_type("multipart/form-data"), handle = connection$handle)
-    if(response$code == 403){
+    if(response$status_code == 403){
       stop("You can not create jobs.")
     }
     files = as_list(content(response))
@@ -151,7 +151,7 @@ create_jobs = function(connection, work_func, data, init_func = NULL, global_var
     # test for user privilegies
     tmp = as_list(batch)$submit_batch
     if (exists("error", envir = as.environment(tmp))){
-      stop(tmp$error$error_msg[[1]])
+      stop("BOINC server error: \"", tmp$error$error_msg[[1]], "\".")
     }
     # Get jobs statuses
     query_xml =                   "<query_batch>\n"
