@@ -32,6 +32,25 @@ user email.}
 }
 \value{
 a connection (list) for use by other functions.
+
+When errors occur, the following exceptions may be thrown:
+\itemize{
+\item for any connections:
+\itemize{
+\item Unsupported server address format.
+\item Connection was canceled by user.
+\item Unrecognized protocol: "<protocol>"
+}
+\item for http/https connections:
+\itemize{
+\item Authorization failed.
+}
+\item for ssh connections:
+\itemize{
+\item Project directory was not found on server.
+\item Other exceptions thrown by ssh_connect.
+}
+}
 }
 \description{
 Create a ssh or http/https connection to server.

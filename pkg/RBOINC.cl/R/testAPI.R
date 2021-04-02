@@ -1,9 +1,12 @@
 # Original file name: "testAPI.R"
 # Created: 2021.03.19
-# Last modified: 2021.03.19
-# License: Comming soon
+# Last modified: 2021.04.02
+# License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
+# Copyright (c) 2021 Karelian Research Centre of the RAS:
+# Institute of Applied Mathematical Research
+# All rights reserved
 
 #' @importFrom R.utils printf
 
@@ -92,15 +95,21 @@ test_jobs = function(work_func, data, init_func = NULL, global_vars = NULL, pack
     dir.create(paste0(t, "/files"), FALSE)
     oldwd = getwd()
     setwd(t)
-    log = system(paste0("Rscript ", t, "/code.R "), TRUE)
-    tmpenv = new.env()
-    obj_list = load(paste0(job_dir, "/shared/result.rbs"), tmpenv)
-    if((length(obj_list) == 1) && (obj_list[1] == "result")){
-      result[[length(result)+1]] = list(log = log, result = tmpenv$result)
-      printf("OK\n")
-    }else{
-      printf("Error\n")
+    tryCatch({
+      log = system(paste0("Rscript ", t, "/code.R "), TRUE)
+      tmpenv = new.env()
+      obj_list = load(paste0(job_dir, "/shared/result.rbs"), tmpenv)
+      if((length(obj_list) == 1) && (obj_list[1] == "result")){
+        result[[length(result)+1]] = list(log = log, result = tmpenv$result)
+        printf("OK\n")
+      }else{
+        printf("Error\n")
+      }
+    }, error = function(mess){
+      setwd(oldwd)
+      stop(mess)
     }
+    )
     setwd(oldwd)
   }
   return(result)

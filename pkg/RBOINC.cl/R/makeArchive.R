@@ -1,9 +1,12 @@
 # Original file name: "makeArchive.R"
 # Created: 2021.02.03
-# Last modified: 2021.03.16
-# License: Comming soon
+# Last modified: 2021.04.02
+# License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
+# Copyright (c) 2021 Karelian Research Centre of the RAS:
+# Institute of Applied Mathematical Research
+# All rights reserved
 
 generate_r_script = function(func, original_work_func_name, init, glob_vars, packages)
 {
@@ -24,7 +27,7 @@ generate_r_script = function(func, original_work_func_name, init, glob_vars, pac
   str = paste0(str, original_work_func_name, " = RBOINC_work_func\n")
   str = paste0(str, "result = RBOINC_work_func(RBOINC_data)\n")
   str = paste0(str, "setwd(\"../../shared/\")\n")
-  str = paste0(str, "save(result, file = \"result.rbs\", compress = \"xz\")\n")
+  str = paste0(str, "save(result, file = \"result.rbs\", compress = \"xz\", compression_level = 9)\n")
   return(str)
 }
 
@@ -61,7 +64,9 @@ make_archive = function(RBOINC_work_func, original_work_func_name, data, RBOINC_
   # Copy files
   files_dir = paste0(tmp_dir, "/files/")
   for(val in files){
-    file.copy(val, files_dir, recursive=TRUE)
+    tryCatch(file.copy(val, files_dir, recursive=TRUE),
+             error = function(mess){stop(mess)},
+             warning = function(mess){stop(mess)})
   }
   # write data
   data_dir = paste0(tmp_dir, "/data/")
@@ -77,8 +82,14 @@ make_archive = function(RBOINC_work_func, original_work_func_name, data, RBOINC_
   archive_path = paste0(tempfile(), ".tar.xz")
   old_wd = getwd()
   setwd(tmp_dir)
-  tar(paste0(tmp_dir, "/common.tar.xz"),c("code.rbs", "code.R", "files"), compression="xz")
-  tar(archive_path, c("common.tar.xz", "data"), compression="xz")
+  tryCatch({
+    tar(paste0(tmp_dir, "/common.tar.xz"),c("code.rbs", "code.R", "files"), compression="xz")
+    tar(archive_path, c("common.tar.xz", "data"), compression="xz")
+  }, error = function(mess){
+    setwd(old_wd)
+    stop(mess)
+  }
+  )
   setwd(old_wd)
   # delete files and return path to archive
   unlink(tmp_dir, recursive = TRUE)

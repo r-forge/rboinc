@@ -1,9 +1,12 @@
 # Original file name: "connection.R"
 # Created: 2021.02.02
-# Last modified: 2021.02.12
-# License: Comming soon
+# Last modified: 2021.04.02
+# License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
+# Copyright (c) 2021 Karelian Research Centre of the RAS:
+# Institute of Applied Mathematical Research
+# All rights reserved
 
 #' @importFrom ssh ssh_connect
 #' @importFrom ssh ssh_exec_wait
@@ -11,7 +14,6 @@
 #' @importFrom httr handle
 #' @importFrom httr POST
 #' @importFrom httr GET
-#' @importFrom httr handle_reset
 #' @importFrom httr content_type
 #' @importFrom askpass askpass
 
@@ -31,9 +33,23 @@
 #' @param password a string containing user password.
 #' @param keyfile path to private key file. For ssh connection only.
 #' @return a connection (list) for use by other functions.
+#'
+#' When errors occur, the following exceptions may be thrown:
+#' * for any connections:
+#'   * Unsupported server address format.
+#'   * Connection was canceled by user.
+#'   * Unrecognized protocol: "<protocol>"
+#' * for http/https connections:
+#'   * Authorization failed.
+#' * for ssh connections:
+#'   * Project directory was not found on server.
+#'   * Other exceptions thrown by ssh_connect.
 #' @inherit create_jobs examples
 create_connection = function(server, dir = "~/projects/rboinc", username, password = NULL, keyfile = NULL)
 {
+  if(!grepl("^.*://.*:[0-9]+$", server) && !grepl("^.*://.*$", server) ){
+    stop("Unsupported server address format.")
+  }
   tmp = strsplit(server, "://")
   protocol = tmp[[1]][1]
   tmp = strsplit(tmp[[1]][2], ":")
@@ -55,36 +71,39 @@ create_connection = function(server, dir = "~/projects/rboinc", username, passwo
     auth_page = paste(auth_page, dir, "login_action.php", sep = "/")
     if(is.null(password)){
       password = askpass()
+      if(is.null(password)){
+        stop("Connection was canceled by user.")
+      }
     }
     auth_res = POST(auth_page, config =  content_type("application/x-www-form-urlencoded"),
                     body = paste0("email_addr=", username, "&passwd=", password), handle = handl)
     if (is.na(match(auth_res$cookies["name"], "auth"))){
-      handle_reset(handl)
-      return(NULL)
+      stop("Authorization failed.")
     }
     return(list(type = "http", url = project_url, handle = handl))
   } else{
-    return(NULL)
+    stop("Unrecognized protocol: \"", protocol, "\".")
   }
 }
 
 connect_ssh = function(host, dir = "~/projects/rboinc", password = NULL, keyfile = NULL)
 {
-  connection = tryCatch({
-    if (is.null(password)){
-      ssh_connect(host, keyfile)
+  if(is.null(password) && is.null(keyfile)){
+    password = askpass()
+    if(is.null(password)){
+      stop("Connection was canceled by user.")
     }else{
-      ssh_connect(host, keyfile, password)
+      connection = ssh_connect(host, keyfile, password)
     }
-  },error = function(cond){
-    return(NULL)
-  },warning = function(cond){
-    return(NULL)
-  })
+  } else if(is.null(password)){
+    connection = ssh_connect(host, keyfile)
+  } else if(is.null(keyfile)){
+    connection = ssh_connect(host, keyfile, password)
+  }
   if(!is.null(connection)){
     if (ssh_exec_wait(connection, paste("cd ", dir)) != 0){
       ssh_disconnect(connection)
-      return(NULL)
+      stop("Project directory was not found on server.")
     }
   }
   return(list(type = "ssh", dir = dir, connection = connection))
