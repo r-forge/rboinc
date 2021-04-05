@@ -1,10 +1,13 @@
 // Original file name: "main.cpp"
 // Created: 2021.03.30
 // Last modified: 2021.03.31
-// License: Comming soon
+// License: BSD-3-clause
 // Written by: Astaf'ev Sergey <seryymail@mail.ru>
 // Description: This is universal validator for any R code results.
 // This is a part of RBOINC R package.
+// Copyright (c) 2021 Karelian Research Centre of the RAS:
+// Institute of Applied Mathematical Research
+// All rights reserved
 #include <RInside.h>
 #include <string>
 #include <iostream>

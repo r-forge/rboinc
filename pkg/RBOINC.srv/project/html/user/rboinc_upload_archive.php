@@ -2,9 +2,12 @@
 // Original file name: "rboinc_upload_archive.php"
 // Created: 2021.02.15
 // Last modified: 2021.04.02
-// License: Comming soon
+// License: BSD-3-clause
 // Written by: Astaf'ev Sergey <seryymail@mail.ru>
 // This is a part of RBOINC R package.
+// Copyright (c) 2021 Karelian Research Centre of the RAS:
+// Institute of Applied Mathematical Research
+// All rights reserved
 
 require_once("../inc/submit_db.inc");
 require_once("../inc/util.inc");

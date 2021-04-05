@@ -2,9 +2,12 @@
 // Original file name: "prefix.inc"
 // Created: 2021.02.11
 // Last modified: 2021.02.11
-// License: Comming soon
+// License: BSD-3-clause
 // Written by: Astaf'ev Sergey <seryymail@mail.ru>
 // This is a part of RBOINC R package.
+// Copyright (c) 2021 Karelian Research Centre of the RAS:
+// Institute of Applied Mathematical Research
+// All rights reserved
 
 function get_next_number($file_name)
 {

@@ -10,7 +10,8 @@ test_jobs(
   init_func = NULL,
   global_vars = NULL,
   packages = c(),
-  files = c()
+  files = c(),
+  callback_function = NULL
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ test_jobs(
 \item{packages}{a string vector with imported packages names.}
 
 \item{files}{a string vector with the filenames that should be available for jobs.}
+
+\item{callback_function}{a function that is called for each result after loading.}
 }
 \value{
 a list with states of jobs. This list contains the following fields:
@@ -54,8 +57,18 @@ init = function()
 # data for processing
 data = list(matrix(rexp(15), 3,5), matrix(rexp(15), 3,5))
 
+#callback function
+print_func = function(val)
+{
+  print(val)
+  # May be any value
+  return(val)
+  #return(NULL)
+}
+
 # Test jobs before sending
-jobs_t = test_jobs(fun, data, init, glob_vars)
+jobs_t = test_jobs(fun, data, init, glob_vars, c("httr", "xml2"), callback_function = print_func)
+jobs_t
 
 # Create connection:
 #con = create_connection("ssh://boinc-server.local", dir = "~/projects/myproject", username = "boincadm", password = "0000") # ssh
