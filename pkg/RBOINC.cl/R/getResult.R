@@ -18,7 +18,7 @@
 
 #' @export update_jobs_status
 
-download_result = function(connection, file, job_name)
+download_result = function(connection, file, job_name, callback_function)
 {
   tmp_dir = tempdir(TRUE)
   file_name = paste0(tmp_dir, "/", job_name)
@@ -40,17 +40,22 @@ download_result = function(connection, file, job_name)
   tmpenv = new.env()
   load(file_name, tmpenv)
   unlink(file_name)
-  # variable result was loaded from tmp file
-  return(tmpenv$result)
+  # save or return result
+  if(is.null(callback_function)){
+    return(tmpenv$result)
+  } else {
+    return(callback_function(tmpenv$result))
+  }
 }
 
 #' @title update_jobs_status
 #' @description Update status for jobs and get result for complete jobs.
 #' @param connection a connection created by create_connection.
 #' @param jobs_status a list returned by create_jobs or update_jobs_status.
+#' @param callback_function a function that is called for each result after loading.
 #' @inherit create_jobs return
 #' @inherit create_jobs examples
-update_jobs_status = function(connection, jobs_status)
+update_jobs_status = function(connection, jobs_status, callback_function = NULL)
 {
   for(k in 1:length(jobs_status$jobs_name)){
     mess = ""
@@ -91,7 +96,11 @@ update_jobs_status = function(connection, jobs_status)
     }
     if ((job_state == 0) && (jobs_status$jobs_code[k] != 0)){
       jobs_status$jobs_status[k] = "done"
-      jobs_status$results[[k]] = download_result(connection, mess, jobs_status$jobs_name[k])
+      jobs_status$results[[k]] = tryCatch(download_result(connection, mess, jobs_status$jobs_name[k], callback_function),
+                                          error = function(mess){
+                                            jobs_status$jobs_code = 7
+                                            return(mess)
+                                          })
     }else if (jobs_status$jobs_code[k] != 0){
       jobs_status$jobs_status[k] = mess
     }

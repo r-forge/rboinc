@@ -3,9 +3,12 @@
 // Original file name: "get_next_number.php"
 // Created: 2021.02.08
 // Last modified: 2021.02.18
-// License: Comming soon
+// License: BSD-3-clause
 // Written by: Astaf'ev Sergey <seryymail@mail.ru>
 // This is a part of RBOINC R package.
+// Copyright (c) 2021 Karelian Research Centre of the RAS:
+// Institute of Applied Mathematical Research
+// All rights reserved
 
 // Get job status by name
 

@@ -33,16 +33,16 @@ create_jobs(
 a list with current states of jobs. This list contains the following fields:
 \itemize{
 \item jobs_name - a name of job on BOINC server;
-\item results - computation results (NULL if computation still not complete);
+\item results - computation results (NULL if computation is still incomplete);
 \item jobs_status - jobs human-readable status for each job;
 \item jobs_code - jobs status code, don't use this field;
 \item status - computation status, may be:
 \itemize{
 \item "initialization" - jobs have been submitted to the server, but their status was not requested by update_jobs_status.
-\item "in_progress" - BOINC is serves jobs.
-\item "done" - computations complete, result downloaded.
-\item "error" - an error occurred where jobs processing.
-\item "queued" - job in queue (only for http/https connections).
+\item "in_progress" - BOINC serves jobs.
+\item "done" - computations are complete, the result was downloaded.
+\item "error" - an error occurred during the job processing.
+\item "queued" - job in the queue (only for http/https connections).
 }
 }
 
@@ -76,8 +76,18 @@ init = function()
 # data for processing
 data = list(matrix(rexp(15), 3,5), matrix(rexp(15), 3,5))
 
+#callback function
+print_func = function(val)
+{
+  print(val)
+  # May be any value
+  return(val)
+  #return(NULL)
+}
+
 # Test jobs before sending
-jobs_t = test_jobs(fun, data, init, glob_vars)
+jobs_t = test_jobs(fun, data, init, glob_vars, c("httr", "xml2"), callback_function = print_func)
+jobs_t
 
 # Create connection:
 #con = create_connection("ssh://boinc-server.local", dir = "~/projects/myproject", username = "boincadm", password = "0000") # ssh

@@ -1,13 +1,19 @@
 Package: RBOINC.cl
-Title: 
-Version: 0.0.0.20210402
+Title: This package allow you to run your apps at BOINC server.
+Version: 0.0.0.20210405
 Authors@R: 
-    person(given = "Sergey",
+    c(person(given = "Sergey",
            family = "Astaf'ev",
            role = c("aut", "cre"),
            email = "seryymail@mail.ru",
-           comment = c(ORCID = "https://orcid.org/0000-0002-4486-798X"))
-Description: 
+           comment = c(ORCID = "https://orcid.org/0000-0002-4486-798X")),
+      person(given = "Alexander",
+           family = "Rumyantsev",
+           role = c("ctb"),
+           email = "ar0@krc.karelia.ru",
+           comment = c(ORCID = "https://orcid.org/0000-0003-2364-5939"))
+           )
+Description: This package allow you to run your apps at BOINC server. This software consist of 3 parts. The server part must be installed at BOINC server before using this package. You must also build your custom virtual machine with R and install vm part at this machine. Virtual machine is a part of BOINC application, therefore you must download it to your BOINC server. Use example in this package to test your BOINC configuration.
 License: BSD_3_clause + file LICENSE
 Encoding: UTF-8
 LazyData: true
