@@ -1,6 +1,6 @@
 # Original file name: "createJob.R"
 # Created: 2021.02.04
-# Last modified: 2021.03.19
+# Last modified: 2021.06.01
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -17,6 +17,7 @@
 #' @importFrom xml2 xml_find_all
 
 #' @export create_jobs
+#' @export create_n_jobs
 
 create_job_xml = function(auth, files)
 {
@@ -44,7 +45,7 @@ create_job_xml = function(auth, files)
 
 }
 
-register_jobs = function(connection, files)
+register_jobs_ssh = function(connection, files)
 {
   # job names
   jobs = character(length(files$data))
@@ -62,24 +63,61 @@ register_jobs = function(connection, files)
     cmd_list[k] = paste0("echo --wu_name ", jobs[k], " ", files$common, " ", files$data[[k]], " >> ", job_file)
   }
   ssh_exec_wait(connection$connection, cmd_list)
-  # Registre jobs
+  # Register jobs
   ssh_exec_wait(connection$connection, paste0( "cd ", connection$dir, " && ./bin/create_work --appname rboinc --wu_template ./templates/rboinc_wu.xml --result_template ./templates/rboinc_result.xml --stdin <", job_file))
   ssh_exec_wait(connection$connection, paste0("rm ", job_file))
   return(jobs)
 }
 
-#' @title create_jobs
-#' @description Send job to BOINC server for parallel processing.
+split_list = function(data, n)
+{
+  l = length(data)
+  n = ifelse(n > l, l, n)
+  ret = vector("list", n)
+  maxLen = ceiling(l/n)
+  minLen = floor(l/n)
+  maxCount = ifelse(minLen != maxLen , (minLen*n-l)/(minLen - maxLen), n)
+  minCount = n - maxCount
+  k = 1
+  while(k <= maxCount){
+    ret[[k]] = vector("list", maxLen)
+    k = k + 1
+  }
+  while(k <= (maxCount + minCount)){
+    ret[[k]] = vector("list", minLen)
+    k = k + 1
+  }
+  i = 1
+  j = 1
+  k = 1
+  for (value in data){
+    ret[[i]][[j]] = list(val = value, pos = k)
+    k = k + 1
+    j = j + 1
+    if(j > length(ret[[i]])){
+      j = 1
+      i = i + 1
+    }
+  }
+  return(ret)
+}
+
+#' @title create_n_jobs
+#' @description This function automatically breaks the data into n parts and creates n jobs.
 #' @param connection a connection created by create_connection.
-#' @param work_func data processing function.
-#' @param data data for processing.  Must be a list!!!
-#' @param init_func initialization function.
+#' @param work_func data processing function. This function runs for each element in data. This function can be recursive.
+#' @param data data for processing.  Must be a numerable list or vector.
+#' @param n a number of jobs. This parameter must be less than or equal to the length of the data.
+#' @param init_func initialization function. This function runs once at the start of a job before the job is split into
+#' separate threads. Necessary for additional initialization, for example, for compiling C++ functions from sources
+#' transferred through files parameter. This function can not to be recursive.
 #' @param global_vars a list in the format <variable name>=<value>.
 #' @param packages a string vector with imported packages names.
-#' @param files a string vector with the filenames that should be available for jobs.
+#' @param files a string vector with the files names that should be available for jobs.
 #' @return a list with current states of jobs. This list contains the following fields:
 #' * jobs_name - a name of job on BOINC server;
-#' * results - computation results (NULL if computation is still incomplete);
+#' * results - computation results (NULL if computation is still incomplete). The length of this list is equal to the
+#' length of the data;
 #' * jobs_status - jobs human-readable status for each job;
 #' * jobs_code - jobs status code, don't use this field;
 #' * status - computation status, may be:
@@ -89,24 +127,26 @@ register_jobs = function(connection, files)
 #'   * "error" - an error occurred during the job processing.
 #'   * "queued" - job in the queue (only for http/https connections).
 #'
-#' When errors occur, the following exceptions may be thrown:
+#' When errors occur, execution can be stopped with the following messages:
 #' * for http connections:
-#'   * You can not create jobs.
-#'   * BOINC server error: "<server message>".
+#'   * "You can not create jobs."
+#'   * "BOINC server error: "<server message>"."
+#' * for unknown connections:
+#'   * "Unknown protocol."
 #' @examples
 #' # import library
 #' library(RBOINC.cl)
-#' # function for processing data
+#' # function for data processing
 #' fun = function(val)
 #' {
 #'   return(val * a + b)
 #' }
 #' # global variables
-#' glob_vars = list(a = 3)
-#' # initialize function
+#' glob_vars = list(a = 3, b = 2)
+#' # Initialization function. This function runs on each node for one times.
 #' init = function()
 #' {
-#'   b <<- 2
+#'   return(NULL)
 #' }
 #' # data for processing
 #' data = list(matrix(rexp(15), 3,5), matrix(rexp(15), 3,5))
@@ -123,29 +163,34 @@ register_jobs = function(connection, files)
 #' # Test jobs before sending
 #' jobs_t = test_jobs(fun, data, init, glob_vars, c("httr", "xml2"), callback_function = print_func)
 #' jobs_t
+#' jobs_t = test_n_jobs(fun, data, 1, init, glob_vars, c("httr", "xml2"), callback_function = print_func)
+#' jobs_t
 #'
 #' # Create connection:
 #' #con = create_connection("ssh://boinc-server.local", dir = "~/projects/myproject", username = "boincadm", password = "0000") # ssh
 #' #con = create_connection("http://boinc-server.local", dir = "myproject", username = "submitter@example.com", password = "000000")# http
 #' con
 #' # send jobs:
-#' jobs = create_jobs(con, fun, data, init, glob_vars)
+#' #jobs = create_jobs(con, fun, data, init, glob_vars)
+#' #jobs = create_n_jobs(con, fun, data, 1, init, glob_vars)
 #' jobs
 #' # Get jobs status. Run this until status not equal "done":
 #' jobs = update_jobs_status(con, jobs)
 #' jobs
 #' # Close connection:
 #' close_connection(con)
-create_jobs = function(connection, work_func, data, init_func = NULL, global_vars = NULL, packages = c(), files = c())
+create_n_jobs = function(connection, work_func, data, n, init_func = NULL, global_vars = NULL, packages = c(), files = c())
 {
+  result_count = length(data)
+  lst = split_list(data, n)
   if(connection$type == "ssh"){
-    ar = make_archive(work_func, deparse(substitute(work_func)), data, init_func, global_vars, packages, files)
-    files = stage_files(con, ar, length(data))
-    jobs = register_jobs(connection, files)
-    ret = list(jobs_name = jobs, results = vector("list", length = length(jobs)), jobs_status = character(length(files$data)), jobs_code = rep(-1, length(files$data)), status = "initialization")
+    ar = make_archive(work_func, deparse(substitute(work_func)), lst, init_func, global_vars, packages, files)
+    files = stage_files_ssh(con, ar, n)
+    jobs = register_jobs_ssh(connection, files)
+    ret = list(jobs_name = jobs, results = vector("list", length = result_count), jobs_status = character(length(files$data)), jobs_code = rep(-1, length(files$data)), status = "initialization")
     return(ret)
   } else if (connection$type == "http"){
-    ar = make_archive(work_func, deparse(substitute(work_func)), data, init_func, global_vars, packages, files)
+    ar = make_archive(work_func, deparse(substitute(work_func)), lst, init_func, global_vars, packages, files)
     # Send archive to server
     response = POST(url = paste0(connection$url, "/rboinc_upload_archive.php"), body = list(archive = upload_file(ar)), config = content_type("multipart/form-data"), handle = connection$handle)
     if(response$status_code == 403){
@@ -179,9 +224,19 @@ create_jobs = function(connection, work_func, data, init_func = NULL, global_var
       jobs_name[k] = val$name[[1]]
       jobs_status[k] = val$status[[1]]
     }
-    ret = list(jobs_name = jobs_name, results = vector("list", length = length(jobs)), jobs_status = jobs_status, jobs_code = rep(-1, length(jobs)), status = "initialization")
+    ret = list(jobs_name = jobs_name, results = vector("list", length = result_count), jobs_status = jobs_status, jobs_code = rep(-1, length(jobs)), status = "initialization")
     return(ret)
   } else {
-    return (NULL)
+    stop ("Unknown protocol.")
   }
+}
+
+
+#' @title create_jobs
+#' @description Send job to BOINC server for parallel processing. This function creates the number of tasks equal to the length of the data.
+#' @inherit create_n_jobs params
+#' @inherit create_n_jobs return
+create_jobs = function(connection, work_func, data, init_func = NULL, global_vars = NULL, packages = c(), files = c())
+{
+  return(create_n_jobs(connection, work_func, data, length(data), init_func, global_vars, packages, files))
 }

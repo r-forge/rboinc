@@ -11,7 +11,7 @@
 #' @importFrom ssh scp_upload
 #' @importFrom ssh ssh_exec_wait
 
-upload_work = function(connection, path_to_archive)
+upload_work_ssh = function(connection, path_to_archive)
 {
   # Create directory for arhive
   ssh_exec_wait(connection$connection, "mkdir -p ~/.rboinc_cache")
@@ -26,7 +26,7 @@ upload_work = function(connection, path_to_archive)
   return(serv_dir)
 }
 
-make_unique_file_names = function(connection, path, data_count)
+make_unique_file_names_ssh = function(connection, path, data_count)
 {
   data = vector("list", data_count)
   files_prefix = ""
@@ -42,10 +42,10 @@ make_unique_file_names = function(connection, path, data_count)
   return(list(data=data, common = paste0(files_prefix, "common.tar.xz")))
 }
 
-stage_files = function(connection, path_to_archive, data_count)
+stage_files_ssh = function(connection, path_to_archive, data_count)
 {
-  serv_path = upload_work(connection, path_to_archive)
-  files = make_unique_file_names(connection, serv_path, data_count)
+  serv_path = upload_work_ssh(connection, path_to_archive)
+  files = make_unique_file_names_ssh(connection, serv_path, data_count)
   ssh_exec_wait(connection$connection, paste0("cd ", connection$dir, " && " , "./bin/stage_file ", serv_path))
   ssh_exec_wait(connection$connection, paste0("cd ", connection$dir, " && " , "./bin/stage_file ", serv_path, "/data"))
   ssh_exec_wait(connection$connection, paste0("rm -r ", serv_path))
