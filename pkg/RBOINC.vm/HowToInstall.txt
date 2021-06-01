@@ -1,4 +1,4 @@
-0. Install Vbox Guest Additionals and R in your VM.
+0. Install Vbox Guest Additionals and R in your VM. Also install "doMC" and "foreach" packages.
 1. Create regular user in VM.
 2. Make autologin for this user after boot.
 3. Add auto mounting at booting time vboxsf "shared" direcory in <user_dir>/shared

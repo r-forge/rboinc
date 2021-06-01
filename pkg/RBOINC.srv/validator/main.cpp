@@ -1,7 +1,7 @@
 // Original file name: "main.cpp"
 // Created: 2021.03.30
 // Last modified: 2021.04.07
-// License: Comming soon
+// License: BSD-3-clause
 // Written by: Astaf'ev Sergey <seryymail@mail.ru>
 // Description: This is universal validator for any R code results.
 // This is a part of RBOINC R package.

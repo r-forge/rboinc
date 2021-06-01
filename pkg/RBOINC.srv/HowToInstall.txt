@@ -1,6 +1,6 @@
 1. Copy all files in project to your BOINC project directory.
 2. Copy your VMs to ./apps/rboinc/<version>/<platforms>/.
-3. Use sample_assimilator with "--outdir download/rboinc" as assimilator for rboinc application.
+3. Use sample_assimilator with "-app rboinc --outdir download/rboinc" as assimilator for rboinc application.
 4. Run "chmod 775 rboinc/cache/" and "chmod 775 rboinc/uploads/" in your project dir.
 5. Set umask for apache2 user to 002 (see /etc/apache2/envvars).
 6. Change apache2 user and group to your boinc admininstrator user and group.

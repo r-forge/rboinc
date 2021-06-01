@@ -30,19 +30,20 @@
 #' For http/https connection, this is the full path to the project page (without the server name).
 #' @param username a string containing username. For ssh connection, this is the user login. For http/https connection, this is
 #' the user email.
-#' @param password a string containing user password.
+#' @param password a string containing user password.If this parameter is equal to NULL, then a window will be displayed prompting you
+#' to enter the password
 #' @param keyfile path to a private key file. For ssh connection only.
 #' @return a connection (list) for use by other functions.
 #'
-#' When errors occur, the following exceptions may be thrown:
+#' When errors occur, execution can be stopped with the following messages:
 #' * for any connections:
-#'   * Unsupported server address format.
-#'   * Connection was canceled by user.
-#'   * Unrecognized protocol: "<protocol>"
+#'   * "Unsupported server address format."
+#'   * "Connection was canceled by user."
+#'   * "Unrecognized protocol: "<protocol>""
 #' * for http/https connections:
-#'   * Authorization failed.
+#'   * "Authorization failed."
 #' * for ssh connections:
-#'   * Project directory was not found on server.
+#'   * "Project directory was not found on server."
 #'   * Other exceptions thrown by ssh_connect.
 #' @inherit create_jobs examples
 create_connection = function(server, dir = "~/projects/rboinc", username, password = NULL, keyfile = NULL)
@@ -50,6 +51,7 @@ create_connection = function(server, dir = "~/projects/rboinc", username, passwo
   if(!grepl("^.*://.*:[0-9]+$", server) && !grepl("^.*://.*$", server) ){
     stop("Unsupported server address format.")
   }
+  # Parse server address:
   tmp = strsplit(server, "://")
   protocol = tmp[[1]][1]
   tmp = strsplit(tmp[[1]][2], ":")

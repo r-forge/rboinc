@@ -1,6 +1,6 @@
 # Original file name: "makeArchive.R"
 # Created: 2021.02.03
-# Last modified: 2021.04.02
+# Last modified: 2021.05.11
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -10,22 +10,40 @@
 
 generate_r_script = function(original_work_func_name, init, glob_vars, packages)
 {
-  str = ""
+  # doMC is not supported on Windows. This package can be installed, but it cannot provide multiprocessing under Windows.
+  # Instead, the code using doMC will be executed in one thread. This script tries to install it because testAPI.R needs this package.
+  str = "if(!require(doMC)){\n  install.packages(\"doMC\", repos = c('http://rforge.net', 'http://cran.rstudio.org'))\n  library(doMC)\n}\nlibrary(foreach)\n"
   for(val in packages){
     str = paste0(str, "if(!require(", val, ")){\n\tinstall.packages(\"", val, "\", repos = c('http://rforge.net', 'http://cran.rstudio.org'))\n",
-                 "\tlibrary(", val, ")\n}\n")
+                 "  library(", val, ")\n}\n")
   }
   str = paste0(str, "load(\"code.rbs\")\n")
   str = paste0(str, "load(\"data.rbs\")\n")
   str = paste0(str, "setwd(\"./files/\")\n")
+  str = paste0(str, "registerDoMC(NULL)\n")
+  str = paste0(str, original_work_func_name, " = RBOINC_work_func\n")
   if(!is.null(glob_vars)){
     str = paste0(str, "list2env(RBOINC_global_vars, .GlobalEnv)\n")
   }
   if(!is.null(init)){
     str = paste0(str, "RBOINC_init_func()\n")
   }
-  str = paste0(str, original_work_func_name, " = RBOINC_work_func\n")
-  str = paste0(str, "result = RBOINC_work_func(RBOINC_data)\n")
+  str = paste0(str, "result = foreach(value = RBOINC_data")
+  if(length(packages) > 0){
+    str = paste0(str, ", .packages = c(\"")
+    str = paste0(str, paste(packages, collapse = "\", \""))
+    str = paste0(str, "\")")
+  }
+  str = paste0(str, ", .export = c(\"RBOINC_work_func\"")
+  if(!is.null(glob_vars)){
+    str = paste0(str, ", \"RBOINC_global_vars\"")
+  }
+  str = paste0(str, ")) %dopar% {\n")
+  if(!is.null(glob_vars)){
+    str = paste0(str, "  list2env(RBOINC_global_vars, .GlobalEnv)\n")
+  }
+  str = paste0(str, "  return(list(res = RBOINC_work_func(value$val), pos = value$pos))\n")
+  str = paste0(str, "}\n")
   str = paste0(str, "setwd(\"../../shared/\")\n")
   str = paste0(str, "save(result, file = \"result.rbs\", compress = \"xz\", compression_level = 9)\n")
   return(str)

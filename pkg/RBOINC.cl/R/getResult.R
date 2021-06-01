@@ -1,6 +1,6 @@
 # Original file name: "getResult.R"
 # Created: 2021.02.08
-# Last modified: 2021.03.16
+# Last modified: 2021.04.30
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -40,10 +40,13 @@ download_result = function(connection, file, job_name, callback_function)
   tmpenv = new.env()
   load(file_name, tmpenv)
   unlink(file_name)
-  # save or return result
+  # return raw or processed result
   if(is.null(callback_function)){
     return(tmpenv$result)
   } else {
+    for (k in 1:length(tmpenv$result)){
+      tmpenv$result[[k]]$res = callback_function(tmpenv$result[[k]]$res)
+    }
     return(callback_function(tmpenv$result))
   }
 }
@@ -51,8 +54,10 @@ download_result = function(connection, file, job_name, callback_function)
 #' @title update_jobs_status
 #' @description Update status for jobs and get result for complete jobs.
 #' @param connection a connection created by create_connection.
-#' @param jobs_status a list returned by create_jobs or update_jobs_status.
-#' @param callback_function a function that is called for each result after loading.
+#' @param jobs_status a list returned by create_jobs, create_n_jobs or update_jobs_status.
+#' @param callback_function a function that is called for each result after loading. This
+#' function must take one argument, which is the result of the work performed. The value
+#' returned by this function is placed in the result list.
 #' @inherit create_jobs return
 #' @inherit create_jobs examples
 update_jobs_status = function(connection, jobs_status, callback_function = NULL)
@@ -96,11 +101,14 @@ update_jobs_status = function(connection, jobs_status, callback_function = NULL)
     }
     if ((job_state == 0) && (jobs_status$jobs_code[k] != 0)){
       jobs_status$jobs_status[k] = "done"
-      jobs_status$results[[k]] = tryCatch(download_result(connection, mess, jobs_status$jobs_name[k], callback_function),
+      tmp = tryCatch(download_result(connection, mess, jobs_status$jobs_name[k], callback_function),
                                           error = function(mess){
                                             jobs_status$jobs_code = 7
                                             return(mess)
                                           })
+      for(val in tmp){
+        jobs_status$results[[val$pos]] = val$res
+      }
     }else if (jobs_status$jobs_code[k] != 0){
       jobs_status$jobs_status[k] = mess
     }
