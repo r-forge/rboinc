@@ -26,28 +26,29 @@ For http/https connection, this is the full path to the project page (without th
 \item{username}{a string containing username. For ssh connection, this is the user login. For http/https connection, this is
 the user email.}
 
-\item{password}{a string containing user password.}
+\item{password}{a string containing user password.If this parameter is equal to NULL, then a window will be displayed prompting you
+to enter the password}
 
 \item{keyfile}{path to a private key file. For ssh connection only.}
 }
 \value{
 a connection (list) for use by other functions.
 
-When errors occur, the following exceptions may be thrown:
+When errors occur, execution can be stopped with the following messages:
 \itemize{
 \item for any connections:
 \itemize{
-\item Unsupported server address format.
-\item Connection was canceled by user.
-\item Unrecognized protocol: "<protocol>"
+\item "Unsupported server address format."
+\item "Connection was canceled by user."
+\item "Unrecognized protocol: "<protocol>""
 }
 \item for http/https connections:
 \itemize{
-\item Authorization failed.
+\item "Authorization failed."
 }
 \item for ssh connections:
 \itemize{
-\item Project directory was not found on server.
+\item "Project directory was not found on server."
 \item Other exceptions thrown by ssh_connect.
 }
 }

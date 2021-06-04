@@ -15,6 +15,7 @@
 #' @importFrom httr cookies
 #' @importFrom xml2 as_list
 #' @importFrom xml2 xml_find_all
+#' @importFrom stats runif
 
 #' @export create_jobs
 #' @export create_n_jobs
@@ -134,6 +135,7 @@ split_list = function(data, n)
 #' * for unknown connections:
 #'   * "Unknown protocol."
 #' @examples
+#' \dontrun{
 #' # import library
 #' library(RBOINC.cl)
 #' # function for data processing
@@ -179,6 +181,7 @@ split_list = function(data, n)
 #' jobs
 #' # Close connection:
 #' close_connection(con)
+#' }
 create_n_jobs = function(connection, work_func, data, n, init_func = NULL, global_vars = NULL, packages = c(), files = c())
 {
   result_count = length(data)

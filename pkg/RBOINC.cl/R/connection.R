@@ -1,6 +1,6 @@
 # Original file name: "connection.R"
 # Created: 2021.02.02
-# Last modified: 2021.04.02
+# Last modified: 2021.06.04
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -121,12 +121,12 @@ close_connection = function(connection)
     ssh_disconnect(connection$connection)
   } else if(connection$type == "http"){
     # Find logout page reference
-    res = GET(url = paste0(con$url, "/home.php"), handle = con$handle)
+    res = GET(url = paste0(connection$url, "/home.php"), handle = connection$handle)
     text = rawToChar(res$content)
     match = regexpr("http.*logout.php.*\">", text, perl = TRUE)
     url = regmatches(text, match)
     url = substring(url,1,nchar(url)-2)
     url = gsub("&amp;", "&", url)
-    res = GET(url, handle = con$handle)
+    res = GET(url, handle = connection$handle)
   }
 }

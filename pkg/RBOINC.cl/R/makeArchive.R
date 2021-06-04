@@ -8,6 +8,8 @@
 # Institute of Applied Mathematical Research
 # All rights reserved
 
+#' @importFrom utils tar
+
 generate_r_script = function(original_work_func_name, init, glob_vars, packages)
 {
   # doMC is not supported on Windows. This package can be installed, but it cannot provide multiprocessing under Windows.

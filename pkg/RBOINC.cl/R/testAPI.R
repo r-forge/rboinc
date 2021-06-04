@@ -9,6 +9,8 @@
 # All rights reserved
 
 #' @importFrom R.utils printf
+#' @importFrom utils untar
+
 
 # The next line was added only to add foreach to the list of dependencies.
 # foreach is used by the generated script and therefore is required by the functions from the testAPI.R
@@ -21,7 +23,7 @@
 #' @description Like create_n_jobs, it creates a jobs for the BOINC server but does not submit them. Instead,
 #' it runs all jobs locally and generates a report at each step. This function is intended for debugging
 #' applications that use RBOINC. Files created by this function are not deleted after its completion.
-#' @inherit create_jobs params
+#' @inherit create_n_jobs params
 #' @inherit update_jobs_status params
 #' @return a list with states of jobs. This list contains the following fields:
 #' * log - Rscript output;
