@@ -18,25 +18,28 @@ create_n_jobs(
 \arguments{
 \item{connection}{a connection created by create_connection.}
 
-\item{work_func}{data processing function. This function runs for each element in data.}
+\item{work_func}{data processing function. This function runs for each element in data. This function can be recursive.}
 
 \item{data}{data for processing.  Must be a numerable list or vector.}
 
-\item{n}{a number of jobs.}
+\item{n}{a number of jobs. This parameter must be less than or equal to the length of the data.}
 
-\item{init_func}{initialization function.}
+\item{init_func}{initialization function. This function runs once at the start of a job before the job is split into
+separate threads. Necessary for additional initialization, for example, for compiling C++ functions from sources
+transferred through files parameter. This function can not to be recursive.}
 
 \item{global_vars}{a list in the format <variable name>=<value>.}
 
 \item{packages}{a string vector with imported packages names.}
 
-\item{files}{a string vector with the filenames that should be available for jobs.}
+\item{files}{a string vector with the files names that should be available for jobs.}
 }
 \value{
 a list with current states of jobs. This list contains the following fields:
 \itemize{
 \item jobs_name - a name of job on BOINC server;
-\item results - computation results (NULL if computation is still incomplete);
+\item results - computation results (NULL if computation is still incomplete). The length of this list is equal to the
+length of the data;
 \item jobs_status - jobs human-readable status for each job;
 \item jobs_code - jobs status code, don't use this field;
 \item status - computation status, may be:
@@ -49,26 +52,27 @@ a list with current states of jobs. This list contains the following fields:
 }
 }
 
-When errors occur, the following exceptions may be thrown:
+When errors occur, execution can be stopped with the following messages:
 \itemize{
 \item for http connections:
 \itemize{
-\item You can not create jobs.
-\item BOINC server error: "<server message>".
+\item "You can not create jobs."
+\item "BOINC server error: "<server message>"."
 }
 \item for unknown connections:
 \itemize{
-\item Unknown protocol.
+\item "Unknown protocol."
 }
 }
 }
 \description{
-This function is similar to create_jobs, but it automatically splits the input data into n tasks.
+This function automatically breaks the data into n parts and creates n jobs.
 }
 \examples{
+\dontrun{
 # import library
 library(RBOINC.cl)
-# function for processing data
+# function for data processing
 fun = function(val)
 {
   return(val * a + b)
@@ -95,17 +99,21 @@ print_func = function(val)
 # Test jobs before sending
 jobs_t = test_jobs(fun, data, init, glob_vars, c("httr", "xml2"), callback_function = print_func)
 jobs_t
+jobs_t = test_n_jobs(fun, data, 1, init, glob_vars, c("httr", "xml2"), callback_function = print_func)
+jobs_t
 
 # Create connection:
 #con = create_connection("ssh://boinc-server.local", dir = "~/projects/myproject", username = "boincadm", password = "0000") # ssh
 #con = create_connection("http://boinc-server.local", dir = "myproject", username = "submitter@example.com", password = "000000")# http
 con
 # send jobs:
-jobs = create_jobs(con, fun, data, init, glob_vars)
+#jobs = create_jobs(con, fun, data, init, glob_vars)
+#jobs = create_n_jobs(con, fun, data, 1, init, glob_vars)
 jobs
 # Get jobs status. Run this until status not equal "done":
 jobs = update_jobs_status(con, jobs)
 jobs
 # Close connection:
 close_connection(con)
+}
 }

@@ -17,23 +17,26 @@ create_jobs(
 \arguments{
 \item{connection}{a connection created by create_connection.}
 
-\item{work_func}{data processing function. This function runs for each element in data.}
+\item{work_func}{data processing function. This function runs for each element in data. This function can be recursive.}
 
 \item{data}{data for processing.  Must be a numerable list or vector.}
 
-\item{init_func}{initialization function.}
+\item{init_func}{initialization function. This function runs once at the start of a job before the job is split into
+separate threads. Necessary for additional initialization, for example, for compiling C++ functions from sources
+transferred through files parameter. This function can not to be recursive.}
 
 \item{global_vars}{a list in the format <variable name>=<value>.}
 
 \item{packages}{a string vector with imported packages names.}
 
-\item{files}{a string vector with the filenames that should be available for jobs.}
+\item{files}{a string vector with the files names that should be available for jobs.}
 }
 \value{
 a list with current states of jobs. This list contains the following fields:
 \itemize{
 \item jobs_name - a name of job on BOINC server;
-\item results - computation results (NULL if computation is still incomplete);
+\item results - computation results (NULL if computation is still incomplete). The length of this list is equal to the
+length of the data;
 \item jobs_status - jobs human-readable status for each job;
 \item jobs_code - jobs status code, don't use this field;
 \item status - computation status, may be:
@@ -46,19 +49,19 @@ a list with current states of jobs. This list contains the following fields:
 }
 }
 
-When errors occur, the following exceptions may be thrown:
+When errors occur, execution can be stopped with the following messages:
 \itemize{
 \item for http connections:
 \itemize{
-\item You can not create jobs.
-\item BOINC server error: "<server message>".
+\item "You can not create jobs."
+\item "BOINC server error: "<server message>"."
 }
 \item for unknown connections:
 \itemize{
-\item Unknown protocol.
+\item "Unknown protocol."
 }
 }
 }
 \description{
-Send job to BOINC server for parallel processing.
+Send job to BOINC server for parallel processing. This function creates the number of tasks equal to the length of the data.
 }
