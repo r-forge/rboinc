@@ -188,7 +188,7 @@ create_n_jobs = function(connection, work_func, data, n, init_func = NULL, globa
   lst = split_list(data, n)
   if(connection$type == "ssh"){
     ar = make_archive(work_func, deparse(substitute(work_func)), lst, init_func, global_vars, packages, files)
-    files = stage_files_ssh(con, ar, n)
+    files = stage_files_ssh(connection, ar, n)
     jobs = register_jobs_ssh(connection, files)
     ret = list(jobs_name = jobs, results = vector("list", length = result_count), jobs_status = character(length(files$data)), jobs_code = rep(-1, length(files$data)), status = "initialization")
     return(ret)
