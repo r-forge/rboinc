@@ -140,7 +140,7 @@ test_n_jobs = function(work_func, data, n, init_func = NULL, global_vars = NULL,
 #' applications that use RBOINC. Files created by this function are not deleted after its completion.
 #' @inherit test_n_jobs params
 #' @inherit test_n_jobs return
-#' @inherit create_jobs examples
+#' @inherit create_n_jobs examples
 test_jobs = function(work_func, data, init_func = NULL, global_vars = NULL, packages = c(), files = c(), callback_function = NULL)
 {
   return(test_n_jobs(work_func, data, length(data), init_func, global_vars, packages, files, callback_function))

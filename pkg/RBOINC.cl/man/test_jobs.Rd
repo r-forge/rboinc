@@ -45,3 +45,52 @@ Like create_jobs, it creates a job for the BOINC server but does not submit it. 
 it runs the job locally and generates a report at each step. This function is intended for debugging
 applications that use RBOINC. Files created by this function are not deleted after its completion.
 }
+\examples{
+\dontrun{
+# import library
+library(RBOINC.cl)
+# function for data processing
+fun = function(val)
+{
+  return(val * a + b)
+}
+# global variables
+glob_vars = list(a = 3, b = 2)
+# Initialization function. This function runs on each node for one times.
+init = function()
+{
+  return(NULL)
+}
+# data for processing
+data = list(matrix(rexp(15), 3,5), matrix(rexp(15), 3,5))
+
+#callback function
+print_func = function(val)
+{
+  print(val)
+  # May be any value
+  return(val)
+  #return(NULL)
+}
+
+# Test jobs before sending
+jobs_t = test_jobs(fun, data, init, glob_vars, c("httr", "xml2"), callback_function = print_func)
+jobs_t
+jobs_t = test_n_jobs(fun, data, 1, init, glob_vars, c("httr", "xml2"), callback_function = print_func)
+jobs_t
+
+# Create connection:
+#con = create_connection("ssh://boinc-server.local", dir = "~/projects/myproject", username = "boincadm", password = "0000") # ssh
+#con = create_connection("http://boinc-server.local", dir = "myproject", username = "submitter@example.com", password = "000000")# http
+con
+# send jobs:
+#jobs = create_jobs(con, fun, data, init, glob_vars)
+#jobs = create_n_jobs(con, fun, data, 1, init, glob_vars)
+jobs
+# Get jobs status. Run this until status not equal "done":
+jobs = update_jobs_status(con, jobs)
+jobs
+# Close connection:
+close_connection(con)
+}
+}
