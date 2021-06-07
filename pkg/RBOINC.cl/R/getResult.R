@@ -58,8 +58,8 @@ download_result = function(connection, file, job_name, callback_function)
 #' @param callback_function a function that is called for each result after loading. This
 #' function must take one argument, which is the result of the work performed. The value
 #' returned by this function is placed in the result list.
-#' @inherit create_jobs return
-#' @inherit create_jobs examples
+#' @inherit create_n_jobs return
+#' @inherit create_n_jobs examples
 update_jobs_status = function(connection, jobs_status, callback_function = NULL)
 {
   for(k in 1:length(jobs_status$jobs_name)){

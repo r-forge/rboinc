@@ -239,6 +239,7 @@ create_n_jobs = function(connection, work_func, data, n, init_func = NULL, globa
 #' @description Send job to BOINC server for parallel processing. This function creates the number of tasks equal to the length of the data.
 #' @inherit create_n_jobs params
 #' @inherit create_n_jobs return
+#' @inherit create_n_jobs examples
 create_jobs = function(connection, work_func, data, init_func = NULL, global_vars = NULL, packages = c(), files = c())
 {
   return(create_n_jobs(connection, work_func, data, length(data), init_func, global_vars, packages, files))
