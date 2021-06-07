@@ -1,6 +1,6 @@
 Package: RBOINC.cl
 Title: This Package Allow you to Run your Tasks at BOINC Server. Current Status: Alpha-2
-Version: 0.0.0.20210604
+Version: 0.0.0.20210607
 Authors@R: 
     c(person(given = "Sergey",
            family = "Astaf'ev",

@@ -97,14 +97,14 @@ print_func = function(val)
 }
 
 # Test jobs before sending
-jobs_t = test_jobs(fun, data, init, glob_vars, c("httr", "xml2"), callback_function = print_func)
+jobs_t = test_jobs(fun, data, init, glob_vars, callback_function = print_func)
 jobs_t
-jobs_t = test_n_jobs(fun, data, 1, init, glob_vars, c("httr", "xml2"), callback_function = print_func)
+jobs_t = test_n_jobs(fun, data, 1, init, glob_vars, callback_function = print_func)
 jobs_t
 
 # Create connection:
-#con = create_connection("ssh://boinc-server.local", dir = "~/projects/myproject", username = "boincadm", password = "0000") # ssh
-#con = create_connection("http://boinc-server.local", dir = "myproject", username = "submitter@example.com", password = "000000")# http
+#con = create_connection("ssh://boinc.local", "~/projects/myproject", "boincadm", "0000") # ssh
+#con = create_connection("http://boinc.local", "myproject", "submitter@example.com","000000")# http
 con
 # send jobs:
 #jobs = create_jobs(con, fun, data, init, glob_vars)
