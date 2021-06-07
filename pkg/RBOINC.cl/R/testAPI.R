@@ -57,7 +57,7 @@ test_n_jobs = function(work_func, data, n, init_func = NULL, global_vars = NULL,
     return("unknown_version")
   }
   )
-  tar_version = substr(tar_version, 1, 12)
+  tar_version = substr(tar_version, 1, 12)[1]
   if(tar_version == "bsdtar 3.3.2"){
     printf("!!!Warning: bsdtar 3.3.2 detected!!! Installing workaround...\t")
     decompress = function(file, exdir){
