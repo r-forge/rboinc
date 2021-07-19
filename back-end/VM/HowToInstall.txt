@@ -1,7 +1,8 @@
 0. Install Vbox Guest Additionals and R in your VM. Also install "doMC" and "foreach" packages.
-1. Create regular user in VM.
+1. Create regular user with name boinc and home dir /home/boinc in VM.
 2. Make autologin for this user after boot.
 3. Add auto mounting at booting time vboxsf "shared" direcory in <user_dir>/shared
 4. Add auto mounting at booting time tmpfs in <user_dir>/workdir
-5. Add boinc_app.sh to user .bashrc
+5. Add boinc_app.sh to user .bashrc. Use boinc_app.sh file from root dir.
 
+P.S. Pre-built VMs can be found here: https://disk.yandex.ru/d/e_aItFuMPfKF2A
