@@ -1,6 +1,6 @@
 # Original file name: "makeArchive.R"
 # Created: 2021.02.03
-# Last modified: 2021.05.11
+# Last modified: 2021.07.19
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -84,9 +84,13 @@ make_archive = function(RBOINC_work_func, original_work_func_name, data, RBOINC_
   # Copy files
   files_dir = paste0(tmp_dir, "/files/")
   for(val in files){
-    tryCatch(file.copy(val, files_dir, recursive=TRUE),
-             error = function(mess){stop(mess)},
-             warning = function(mess){stop(mess)})
+    tryCatch(
+      file.copy(val, files_dir, recursive=TRUE),
+    error = function(mess){
+      stop(paste0("Archive making error: \"", mess, "\""))
+    }, warning = function(mess){
+      stop(paste0("Archive making error: \"", mess, "\""))
+    })
   }
   # write data
   data_dir = paste0(tmp_dir, "/data/")
@@ -101,16 +105,15 @@ make_archive = function(RBOINC_work_func, original_work_func_name, data, RBOINC_
   # create archive
   archive_path = paste0(tempfile(), ".tar.xz")
   old_wd = getwd()
+  on.exit(setwd(old_wd), TRUE)
   setwd(tmp_dir)
   tryCatch({
     tar(paste0(tmp_dir, "/common.tar.xz"),c("code.rbs", "code.R", "files"), compression="xz")
     tar(archive_path, c("common.tar.xz", "data"), compression="xz")
   }, error = function(mess){
-    setwd(old_wd)
-    stop(mess)
+    stop(paste0("Archive making error: \"", mess, "\""))
   }
   )
-  setwd(old_wd)
   # delete files and return path to archive
   unlink(tmp_dir, recursive = TRUE)
   return(archive_path)

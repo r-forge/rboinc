@@ -30,7 +30,7 @@
 #' For http/https connection, this is the full path to the project page (without the server name).
 #' @param username a string containing username. For ssh connection, this is the user login. For http/https connection, this is
 #' the user email.
-#' @param password a string containing user password.If this parameter is equal to NULL, then a window will be displayed prompting you
+#' @param password a string containing user password. If this parameter is equal to NULL, then a window will be displayed prompting you
 #' to enter the password
 #' @param keyfile path to a private key file. For ssh connection only.
 #' @return a connection (list) for use by other functions.

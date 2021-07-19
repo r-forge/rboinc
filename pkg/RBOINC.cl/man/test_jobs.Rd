@@ -38,12 +38,26 @@ a list with states of jobs. This list contains the following fields:
 \itemize{
 \item log - Rscript output;
 \item result - computation result.
+When errors occur, execution can be stopped with the following messages:
+\item for any connection:
+\itemize{
+\item "Archive making error: <error message>"
+}
 }
 }
 \description{
 Like create_jobs, it creates a job for the BOINC server but does not submit it. Instead,
 it runs the job locally and generates a report at each step. This function is intended for debugging
 applications that use RBOINC. Files created by this function are not deleted after its completion.
+}
+\details{
+When errors occur, execution can be stopped with the following messages:
+\itemize{
+\item for any connection:
+\itemize{
+\item "Archive making error: <error message>"
+}
+}
 }
 \examples{
 \dontrun{
