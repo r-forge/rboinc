@@ -32,22 +32,27 @@ length of the data;
 \item "queued" - job in the queue (only for http/https connections).
 }
 }
-
+}
+\description{
+Update status for jobs and get result for complete jobs.
+}
+\details{
 When errors occur, execution can be stopped with the following messages:
 \itemize{
-\item for http connections:
-\itemize{
-\item "You can not create jobs."
-\item "BOINC server error: "<server message>"."
-}
 \item for unknown connections:
 \itemize{
 \item "Unknown protocol."
 }
+\item for any connection:
+\itemize{
+\item "The number of tasks must be greater than 0."
+This function can output the following warnings:
+}
+\item for any connection:
+\itemize{
+\item Failed to download the result: "<error message>"
 }
 }
-\description{
-Update status for jobs and get result for complete jobs.
 }
 \examples{
 \dontrun{

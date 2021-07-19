@@ -41,6 +41,11 @@ a list with states of jobs. This list contains the following fields:
 \itemize{
 \item log - Rscript output;
 \item result - computation result.
+When errors occur, execution can be stopped with the following messages:
+\item for any connection:
+\itemize{
+\item "Archive making error: <error message>"
+}
 }
 }
 \description{

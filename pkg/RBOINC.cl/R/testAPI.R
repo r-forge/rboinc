@@ -11,7 +11,6 @@
 #' @importFrom R.utils printf
 #' @importFrom utils untar
 
-
 # The next line was added only to add foreach to the list of dependencies.
 # foreach is used by the generated script and therefore is required by the functions from the testAPI.R
 #' @importFrom foreach foreach
@@ -28,6 +27,9 @@
 #' @return a list with states of jobs. This list contains the following fields:
 #' * log - Rscript output;
 #' * result - computation result.
+#' When errors occur, execution can be stopped with the following messages:
+#' * for any connection:
+#'   * "Archive making error: <error message>"
 #' @inherit create_n_jobs examples
 test_n_jobs = function(work_func, data, n, init_func = NULL, global_vars = NULL, packages = c(), files = c(), callback_function = NULL)
 {
@@ -104,7 +106,8 @@ test_n_jobs = function(work_func, data, n, init_func = NULL, global_vars = NULL,
     file.copy(paste0(tmpdir, "/data/", val), paste0(t, "/data.rbs"))
     decompress(paste0(tmpdir, "/common.tar.xz"), exdir = t)
     dir.create(paste0(t, "/files"), FALSE)
-    oldwd = getwd()
+    old_wd = getwd()
+    on.exit(setwd(old_wd), TRUE)
     setwd(t)
     tryCatch({
       log = system(paste0("Rscript ", t, "/code.R "), TRUE)
@@ -125,11 +128,9 @@ test_n_jobs = function(work_func, data, n, init_func = NULL, global_vars = NULL,
         printf("Error\n")
       }
     }, error = function(mess){
-      setwd(oldwd)
       stop(mess)
     }
     )
-    setwd(oldwd)
   }
   return(result)
 }
@@ -140,6 +141,10 @@ test_n_jobs = function(work_func, data, n, init_func = NULL, global_vars = NULL,
 #' applications that use RBOINC. Files created by this function are not deleted after its completion.
 #' @inherit test_n_jobs params
 #' @inherit test_n_jobs return
+#' @details
+#' When errors occur, execution can be stopped with the following messages:
+#' * for any connection:
+#'   * "Archive making error: <error message>"
 #' @inherit create_n_jobs examples
 test_jobs = function(work_func, data, init_func = NULL, global_vars = NULL, packages = c(), files = c(), callback_function = NULL)
 {

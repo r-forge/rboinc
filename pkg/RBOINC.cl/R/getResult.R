@@ -1,6 +1,6 @@
 # Original file name: "getResult.R"
 # Created: 2021.02.08
-# Last modified: 2021.04.30
+# Last modified: 2021.07.19
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -27,14 +27,14 @@ download_result = function(connection, file, job_name, callback_function)
   }else if(connection$type == "http"){
     for(k in 1:5){
       donwload_res = GET(file, write_disk(file_name, overwrite=TRUE))
+      # Fix for BOINC bug. The server reports on a successful job completion earlier than
+      # copies the file to the result folder. Sometimes it temporarily leads to error 404.
       if (donwload_res$status_code == 404){
         Sys.sleep(1)
       } else {
         break
       }
     }
-  }else{
-    return(NULL)
   }
   # fix for potential vulnerability
   tmpenv = new.env()
@@ -59,6 +59,16 @@ download_result = function(connection, file, job_name, callback_function)
 #' function must take one argument, which is the result of the work performed. The value
 #' returned by this function is placed in the result list.
 #' @inherit create_n_jobs return
+#' @details
+#' When errors occur, execution can be stopped with the following messages:
+#' * for unknown connections:
+#'   * "Unknown protocol."
+#' * for any connection:
+#'   * "The number of tasks must be greater than 0."
+#' This function can output the following warnings:
+#' * for any connection:
+#'   * Failed to download the result: "<error message>"
+#'
 #' @inherit create_n_jobs examples
 update_jobs_status = function(connection, jobs_status, callback_function = NULL)
 {
@@ -75,9 +85,9 @@ update_jobs_status = function(connection, jobs_status, callback_function = NULL)
       cook = cookies(connection$handle)
       auth = cook[cook["name"]=="auth", "value"]
       # Create request text
-      get_job_xml =                     "<query_completed_job>\n"
-      get_job_xml = paste0(get_job_xml, "  <authenticator>", auth, "</authenticator>\n")
-      get_job_xml = paste0(get_job_xml, "  <job_name>", jobs_status$jobs_name[k], "</job_name>\n")
+      get_job_xml =                     "<query_completed_job>"
+      get_job_xml = paste0(get_job_xml,   "<authenticator>", auth, "</authenticator>")
+      get_job_xml = paste0(get_job_xml,   "<job_name>", jobs_status$jobs_name[k], "</job_name>")
       get_job_xml = paste0(get_job_xml, "</query_completed_job>")
       response = content(POST(url = paste0(connection$url,"/submit_rpc_handler.php"), body = list(request = get_job_xml), handle = connection$handle))
       job_status = as_list(response)$query_completed_job$completed_job
@@ -97,15 +107,16 @@ update_jobs_status = function(connection, jobs_status, callback_function = NULL)
         }
       }
     }else{
-      return(NULL)
+      stop ("Unknown protocol.")
     }
     if ((job_state == 0) && (jobs_status$jobs_code[k] != 0)){
       jobs_status$jobs_status[k] = "done"
-      tmp = tryCatch(download_result(connection, mess, jobs_status$jobs_name[k], callback_function),
-                                          error = function(mess){
-                                            jobs_status$jobs_code = 7
-                                            return(mess)
-                                          })
+      tmp = tryCatch(
+        download_result(connection, mess, jobs_status$jobs_name[k], callback_function),
+      error = function(mess){
+        jobs_status$jobs_code = 7
+        warning(paste0("Failed to download the result: \"", mess, "\""))
+      })
       for(val in tmp){
         jobs_status$results[[val$pos]] = val$res
       }

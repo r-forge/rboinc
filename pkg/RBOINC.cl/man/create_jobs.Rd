@@ -48,19 +48,6 @@ length of the data;
 \item "queued" - job in the queue (only for http/https connections).
 }
 }
-
-When errors occur, execution can be stopped with the following messages:
-\itemize{
-\item for http connections:
-\itemize{
-\item "You can not create jobs."
-\item "BOINC server error: "<server message>"."
-}
-\item for unknown connections:
-\itemize{
-\item "Unknown protocol."
-}
-}
 }
 \description{
 Send job to BOINC server for parallel processing. This function creates the number of tasks equal to the length of the data.

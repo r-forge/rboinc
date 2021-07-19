@@ -26,7 +26,7 @@ For http/https connection, this is the full path to the project page (without th
 \item{username}{a string containing username. For ssh connection, this is the user login. For http/https connection, this is
 the user email.}
 
-\item{password}{a string containing user password.If this parameter is equal to NULL, then a window will be displayed prompting you
+\item{password}{a string containing user password. If this parameter is equal to NULL, then a window will be displayed prompting you
 to enter the password}
 
 \item{keyfile}{path to a private key file. For ssh connection only.}

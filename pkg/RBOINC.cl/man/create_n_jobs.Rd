@@ -51,7 +51,11 @@ length of the data;
 \item "queued" - job in the queue (only for http/https connections).
 }
 }
-
+}
+\description{
+This function automatically breaks the data into n parts and creates n jobs.
+}
+\details{
 When errors occur, execution can be stopped with the following messages:
 \itemize{
 \item for http connections:
@@ -63,10 +67,12 @@ When errors occur, execution can be stopped with the following messages:
 \itemize{
 \item "Unknown protocol."
 }
+\item for any connection:
+\itemize{
+\item "The number of tasks must be greater than 0."
+\item "Archive making error: <error message>"
 }
 }
-\description{
-This function automatically breaks the data into n parts and creates n jobs.
 }
 \examples{
 \dontrun{
