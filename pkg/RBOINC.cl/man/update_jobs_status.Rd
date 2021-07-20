@@ -9,23 +9,27 @@ update_jobs_status(connection, jobs_status, callback_function = NULL)
 \arguments{
 \item{connection}{a connection created by create_connection.}
 
-\item{jobs_status}{a list returned by create_jobs, create_n_jobs or update_jobs_status.}
+\item{jobs_status}{a list returned by create_jobs, create_n_jobs or
+update_jobs_status.}
 
-\item{callback_function}{a function that is called for each result after loading. This
-function must take one argument, which is the result of the work performed. The value
-returned by this function is placed in the result list.}
+\item{callback_function}{a function that is called for each result after
+loading. This function must take one argument, which is the result of the
+work performed. The value returned by this function is placed in the result
+list.}
 }
 \value{
-a list with current states of jobs. This list contains the following fields:
+a list with current states of jobs. This list contains the following
+fields:
 \itemize{
 \item jobs_name - a name of job on BOINC server;
-\item results - computation results (NULL if computation is still incomplete). The length of this list is equal to the
-length of the data;
+\item results - computation results (NULL if computation is still incomplete).
+The length of this list is equal to the length of the data;
 \item jobs_status - jobs human-readable status for each job;
 \item jobs_code - jobs status code, don't use this field;
 \item status - computation status, may be:
 \itemize{
-\item "initialization" - jobs have been submitted to the server, but their status was not requested by update_jobs_status.
+\item "initialization" - jobs have been submitted to the server, but their
+status was not requested by update_jobs_status.
 \item "in_progress" - BOINC serves jobs.
 \item "done" - computations are complete, the result was downloaded.
 \item "error" - an error occurred during the job processing.
@@ -50,7 +54,7 @@ This function can output the following warnings:
 }
 \item for any connection:
 \itemize{
-\item Failed to download the result: "<error message>"
+\item Failed to download the result: "\code{<}error message\code{>}"
 }
 }
 }

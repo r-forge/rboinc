@@ -12,16 +12,19 @@
 #' @importFrom utils untar
 
 # The next line was added only to add foreach to the list of dependencies.
-# foreach is used by the generated script and therefore is required by the functions from the testAPI.R
+# foreach is used by the generated script and therefore is required by the
+# functions from the testAPI.R
 #' @importFrom foreach foreach
 
 #' @export test_jobs
 #' @export test_n_jobs
 
 #' @title test_n_jobs
-#' @description Like create_n_jobs, it creates a jobs for the BOINC server but does not submit them. Instead,
-#' it runs all jobs locally and generates a report at each step. This function is intended for debugging
-#' applications that use RBOINC. Files created by this function are not deleted after its completion.
+#' @description Like create_n_jobs, it creates a jobs for the BOINC server but
+#' does not submit them. Instead, it runs all jobs locally and generates a
+#' report at each step. This function is intended for debugging applications
+#' that use RBOINC. Files created by this function are not deleted after its
+#' completion.
 #' @inherit create_n_jobs params
 #' @inherit update_jobs_status params
 #' @return a list with states of jobs. This list contains the following fields:
@@ -29,13 +32,26 @@
 #' * result - computation result.
 #' When errors occur, execution can be stopped with the following messages:
 #' * for any connection:
-#'   * "Archive making error: <error message>"
+#'   * "Archive making error: \code{<}error message\code{>}"
 #' @inherit create_n_jobs examples
-test_n_jobs = function(work_func, data, n, init_func = NULL, global_vars = NULL, packages = c(), files = c(), callback_function = NULL)
+test_n_jobs = function(work_func,
+                       data,
+                       n,
+                       init_func = NULL,
+                       global_vars = NULL,
+                       packages = c(),
+                       files = c(),
+                       callback_function = NULL)
 {
   printf("Testing archive making...\t")
   lst = split_list(data, n)
-  ar = make_archive(work_func, deparse(substitute(work_func)), lst, init_func, global_vars, packages, files)
+  ar = make_archive(work_func,
+                    deparse(substitute(work_func)),
+                    lst,
+                    init_func,
+                    global_vars,
+                    packages,
+                    files)
   if(is.null(ar)){
     printf("Error\n")
     return(NULL)
@@ -52,7 +68,8 @@ test_n_jobs = function(work_func, data, n, init_func = NULL, global_vars = NULL,
     return(NULL)
   }
 
-  # Workaround for bsdtar 3.3.2 bug. For some tar.xz arhives bsdtar 3.3.2 freezes when unpacking.
+  # Workaround for bsdtar 3.3.2 bug. For some tar.xz arhives bsdtar 3.3.2
+  # freezes when unpacking.
   tar_version = tryCatch({
     untar("", extras = "--version", list = TRUE)
   },error=function(cond){
@@ -120,7 +137,8 @@ test_n_jobs = function(work_func, data, n, init_func = NULL, global_vars = NULL,
           }
         } else{
           for(val in tmpenv$result){
-            result[[val$pos]] = list(log = log, result = callback_function(val$res))
+            result[[val$pos]] = list(log = log,
+                                     result = callback_function(val$res))
           }
         }
         printf("OK\n")
@@ -136,17 +154,30 @@ test_n_jobs = function(work_func, data, n, init_func = NULL, global_vars = NULL,
 }
 
 #' @title test_jobs
-#' @description Like create_jobs, it creates a job for the BOINC server but does not submit it. Instead,
-#' it runs the job locally and generates a report at each step. This function is intended for debugging
-#' applications that use RBOINC. Files created by this function are not deleted after its completion.
+#' @description Like create_jobs, it creates a job for the BOINC server but does
+#' not submit it. Instead, it runs the job locally and generates a report at
+#' each step. This function is intended for debugging applications that use
+#' RBOINC. Files created by this function are not deleted after its completion.
 #' @inherit test_n_jobs params
 #' @inherit test_n_jobs return
 #' @details
 #' When errors occur, execution can be stopped with the following messages:
 #' * for any connection:
-#'   * "Archive making error: <error message>"
+#'   * "Archive making error: \code{<}error message\code{>}"
 #' @inherit create_n_jobs examples
-test_jobs = function(work_func, data, init_func = NULL, global_vars = NULL, packages = c(), files = c(), callback_function = NULL)
+test_jobs = function(work_func,
+                     data,
+                     init_func = NULL,
+                     global_vars = NULL,
+                     packages = c(),
+                     files = c(),
+                     callback_function = NULL)
 {
-  return(test_n_jobs(work_func, data, length(data), init_func, global_vars, packages, files, callback_function))
+  return(test_n_jobs(work_func,
+                     data, length(data),
+                     init_func,
+                     global_vars,
+                     packages,
+                     files,
+                     callback_function))
 }

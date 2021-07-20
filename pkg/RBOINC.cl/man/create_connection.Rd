@@ -13,21 +13,25 @@ create_connection(
 )
 }
 \arguments{
-\item{server}{an ssh or http server URL of the form <protocol>://<server name>:<port>. Examples:
+\item{server}{an ssh or http server URL of the form
+\code{<}protocol\code{>}://\code{<}server name\code{>}:\code{<}port\code{>}.
+Examples:
 \itemize{
 \item "ssh://boinc-server.local" - for ssh connection;
 \item "http://boinc-server.local" - for http connection;
 \item "https://boinc-server.local" - for https connection.
 }}
 
-\item{dir}{a rboinc project directory on the server. For ssh connection, this is the directory where the BOINC project is located.
-For http/https connection, this is the full path to the project page (without the server name).}
+\item{dir}{a rboinc project directory on the server. For ssh connection,
+this is the directory where the BOINC project is located. For http/https
+connection, this is the full path to the project page (without the server
+name).}
 
-\item{username}{a string containing username. For ssh connection, this is the user login. For http/https connection, this is
-the user email.}
+\item{username}{a string containing username. For ssh connection, this is the
+user login. For http/https connection, this is the user email.}
 
-\item{password}{a string containing user password. If this parameter is equal to NULL, then a window will be displayed prompting you
-to enter the password}
+\item{password}{a string containing user password. If this parameter is equal
+to NULL, then a window will be displayed prompting you to enter the password}
 
 \item{keyfile}{path to a private key file. For ssh connection only.}
 }
@@ -40,7 +44,7 @@ When errors occur, execution can be stopped with the following messages:
 \itemize{
 \item "Unsupported server address format."
 \item "Connection was canceled by user."
-\item "Unrecognized protocol: "<protocol>""
+\item "Unrecognized protocol: "\code{<}protocol\code{>}""
 }
 \item for http/https connections:
 \itemize{

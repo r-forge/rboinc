@@ -1,6 +1,6 @@
 # Original file name: "createJob.R"
 # Created: 2021.02.04
-# Last modified: 2021.07.19
+# Last modified: 2021.07.20
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -52,7 +52,9 @@ register_jobs_http = function(connection, files)
   auth = cook[cook["name"]=="auth", "value"]
   # Registry jobs
   request = create_job_xml(auth, files$staged_files)
-  batch = content(POST(url = paste0(connection$url,"/submit_rpc_handler.php"), body = list(request = request), handle = connection$handle))
+  batch = content(POST(url = paste0(connection$url,"/submit_rpc_handler.php"),
+                       body = list(request = request),
+                       handle = connection$handle))
   # test for user privilegies
   tmp = as_list(batch)$submit_batch
   if (exists("error", envir = as.environment(tmp))){
@@ -64,12 +66,14 @@ register_jobs_http = function(connection, files)
   query_xml = paste0(query_xml,   "<batch_id>", as_list(batch)$submit_batch$batch_id[[1]], "</batch_id>")
   query_xml = paste0(query_xml,   "<get_job_details>1</get_job_details>")
   query_xml = paste0(query_xml, "</query_batch>")
-  jobs = content(POST(url = paste0(connection$url,"/submit_rpc_handler.php"), body = list(request = query_xml), handle = connection$handle))
+  jobs = content(POST(url = paste0(connection$url,"/submit_rpc_handler.php"),
+                      body = list(request = query_xml),
+                      handle = connection$handle))
   jobs = xml_find_all(jobs, "job")
   # make returned list
   jobs_name = character(length(jobs))
   #jobs_status = character(length(jobs))
-  for(k in 1:length(jobs)){
+  for(k in seq_len(length(jobs))){
     val = as_list(jobs[k])[[1]]
     jobs_name[k] = val$name[[1]]
     #jobs_status[k] = val$status[[1]]
@@ -84,14 +88,18 @@ register_jobs_ssh = function(connection, files)
   jobs = character(length(files$data))
   # get unique job name
   job_name = ""
-  ssh_exec_wait(connection$connection, paste0(connection$dir, "/rboinc/bin/get_job_name.sh"), function(str){job_name <<- rawToChar(str)})
+  ssh_exec_wait(connection$connection,
+                paste0(connection$dir, "/rboinc/bin/get_job_name.sh"),
+                function(str){job_name <<- rawToChar(str)})
   # Create file for job registration
   job_file = ""
-  ssh_exec_wait(connection$connection, "date +\"%G_%m_%d_%I_%M_%S_%N\"", function(str){job_file <<- rawToChar(str[1:(length(str)-1)])})
+  ssh_exec_wait(connection$connection,
+                "date +\"%G_%m_%d_%I_%M_%S_%N\"",
+                function(str){job_file <<- rawToChar(str[1:(length(str)-1)])})
   job_file = paste0("~/.rboinc_cache/", job_file)
   # Write file
   cmd_list = character(length(files$data))
-  for(k in 1:length(files$data)){
+  for(k in seq_len(length(files$data))){
     jobs[k] = paste0(job_name, "_", k)
     cmd_list[k] = paste0("echo --wu_name ", jobs[k], " ", files$common, " ", files$data[[k]], " >> ", job_file)
   }
@@ -136,25 +144,34 @@ split_list = function(data, n)
 }
 
 #' @title create_n_jobs
-#' @description This function automatically breaks the data into n parts and creates n jobs.
+#' @description This function automatically breaks the data into n parts and
+#' creates n jobs.
 #' @param connection a connection created by create_connection.
-#' @param work_func data processing function. This function runs for each element in data. This function can be recursive.
+#' @param work_func data processing function. This function runs for each
+#' element in data. This function can be recursive.
 #' @param data data for processing.  Must be a numerable list or vector.
-#' @param n a number of jobs. This parameter must be less than or equal to the length of the data.
-#' @param init_func initialization function. This function runs once at the start of a job before the job is split into
-#' separate threads. Necessary for additional initialization, for example, for compiling C++ functions from sources
-#' transferred through files parameter. This function can not to be recursive.
-#' @param global_vars a list in the format <variable name>=<value>.
+#' @param n a number of jobs. This parameter must be less than or equal to the
+#' length of the data.
+#' @param init_func initialization function. This function runs once at the
+#' start of a job before the job is split into separate threads. Necessary for
+#' additional initialization, for example, for compiling C++ functions from
+#' sources transferred through files parameter. This function can not to be
+#' recursive.
+#' @param global_vars a list in the format
+#' \code{<}variable name\code{>}=\code{<}value\code{>}.
 #' @param packages a string vector with imported packages names.
-#' @param files a string vector with the files names that should be available for jobs.
-#' @return a list with current states of jobs. This list contains the following fields:
+#' @param files a string vector with the files names that should be available
+#' for jobs.
+#' @return a list with current states of jobs. This list contains the following
+#' fields:
 #' * jobs_name - a name of job on BOINC server;
-#' * results - computation results (NULL if computation is still incomplete). The length of this list is equal to the
-#' length of the data;
+#' * results - computation results (NULL if computation is still incomplete).
+#' The length of this list is equal to the length of the data;
 #' * jobs_status - jobs human-readable status for each job;
 #' * jobs_code - jobs status code, don't use this field;
 #' * status - computation status, may be:
-#'   * "initialization" - jobs have been submitted to the server, but their status was not requested by update_jobs_status.
+#'   * "initialization" - jobs have been submitted to the server, but their
+#'   status was not requested by update_jobs_status.
 #'   * "in_progress" - BOINC serves jobs.
 #'   * "done" - computations are complete, the result was downloaded.
 #'   * "error" - an error occurred during the job processing.
@@ -163,12 +180,12 @@ split_list = function(data, n)
 #' When errors occur, execution can be stopped with the following messages:
 #' * for http connections:
 #'   * "You can not create jobs."
-#'   * "BOINC server error: "<server message>"."
+#'   * "BOINC server error: "\code{<}server message\code{>}"."
 #' * for unknown connections:
 #'   * "Unknown protocol."
 #' * for any connection:
 #'   * "The number of tasks must be greater than 0."
-#'   * "Archive making error: <error message>"
+#'   * "Archive making error: \code{<}error message\code{>}"
 #'
 #' @examples
 #' \dontrun{
@@ -218,14 +235,27 @@ split_list = function(data, n)
 #' # Close connection:
 #' close_connection(con)
 #' }
-create_n_jobs = function(connection, work_func, data, n, init_func = NULL, global_vars = NULL, packages = c(), files = c())
+create_n_jobs = function(connection,
+                         work_func,
+                         data,
+                         n,
+                         init_func = NULL,
+                         global_vars = NULL,
+                         packages = c(),
+                         files = c())
 {
   if(n < 1){
     stop("The number of tasks must be greater than 0.")
   }
   result_count = length(data)
   lst = split_list(data, n)
-  ar = make_archive(work_func, deparse(substitute(work_func)), lst, init_func, global_vars, packages, files)
+  ar = make_archive(work_func,
+                    deparse(substitute(work_func)),
+                    lst,
+                    init_func,
+                    global_vars,
+                    packages,
+                    files)
   if(connection$type == "ssh"){
     # Send archive to server
     files = stage_files_ssh(connection, ar, n)
@@ -233,7 +263,10 @@ create_n_jobs = function(connection, work_func, data, n, init_func = NULL, globa
     jobs = register_jobs_ssh(connection, files)
   } else if (connection$type == "http"){
     # Send archive to server
-    response = POST(url = paste0(connection$url, "/rboinc_upload_archive.php"), body = list(archive = upload_file(ar)), config = content_type("multipart/form-data"), handle = connection$handle)
+    response = POST(url = paste0(connection$url, "/rboinc_upload_archive.php"),
+                    body = list(archive = upload_file(ar)),
+                    config = content_type("multipart/form-data"),
+                    handle = connection$handle)
     if(response$status_code == 403){
       stop("You can not create jobs.")
     }
@@ -243,17 +276,35 @@ create_n_jobs = function(connection, work_func, data, n, init_func = NULL, globa
   } else {
     stop ("Unknown protocol.")
   }
-  ret = list(jobs_name = jobs, results = vector("list", length = result_count), jobs_status = character(length(files$data)), jobs_code = rep(-1, length(jobs)), status = "initialization")
+  ret = list(jobs_name = jobs,
+             results = vector("list", length = result_count),
+             jobs_status = character(length(files$data)),
+             jobs_code = rep(-1, length(jobs)),
+             status = "initialization")
   return(ret)
 }
 
 
 #' @title create_jobs
-#' @description Send job to BOINC server for parallel processing. This function creates the number of tasks equal to the length of the data.
+#' @description Send job to BOINC server for parallel processing. This function
+#' creates the number of tasks equal to the length of the data.
 #' @inherit create_n_jobs params
 #' @inherit create_n_jobs return
 #' @inherit create_n_jobs examples
-create_jobs = function(connection, work_func, data, init_func = NULL, global_vars = NULL, packages = c(), files = c())
+create_jobs = function(connection,
+                       work_func,
+                       data,
+                       init_func = NULL,
+                       global_vars = NULL,
+                       packages = c(),
+                       files = c())
 {
-  return(create_n_jobs(connection, work_func, data, length(data), init_func, global_vars, packages, files))
+  return(create_n_jobs(connection,
+                       work_func,
+                       data,
+                       length(data),
+                       init_func,
+                       global_vars,
+                       packages,
+                       files))
 }

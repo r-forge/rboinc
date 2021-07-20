@@ -22,16 +22,20 @@
 
 #' @title create_connection
 #' @description Create an ssh or http/https connection to the BOINC server.
-#' @param server an ssh or http server URL of the form <protocol>://<server name>:<port>. Examples:
+#' @param server an ssh or http server URL of the form
+#' \code{<}protocol\code{>}://\code{<}server name\code{>}:\code{<}port\code{>}.
+#' Examples:
 #' * "ssh://boinc-server.local" - for ssh connection;
 #' * "http://boinc-server.local" - for http connection;
 #' * "https://boinc-server.local" - for https connection.
-#' @param dir a rboinc project directory on the server. For ssh connection, this is the directory where the BOINC project is located.
-#' For http/https connection, this is the full path to the project page (without the server name).
-#' @param username a string containing username. For ssh connection, this is the user login. For http/https connection, this is
-#' the user email.
-#' @param password a string containing user password. If this parameter is equal to NULL, then a window will be displayed prompting you
-#' to enter the password
+#' @param dir a rboinc project directory on the server. For ssh connection,
+#' this is the directory where the BOINC project is located. For http/https
+#' connection, this is the full path to the project page (without the server
+#' name).
+#' @param username a string containing username. For ssh connection, this is the
+#' user login. For http/https connection, this is the user email.
+#' @param password a string containing user password. If this parameter is equal
+#' to NULL, then a window will be displayed prompting you to enter the password
 #' @param keyfile path to a private key file. For ssh connection only.
 #' @return a connection (list) for use by other functions.
 #'
@@ -39,14 +43,18 @@
 #' * for any connections:
 #'   * "Unsupported server address format."
 #'   * "Connection was canceled by user."
-#'   * "Unrecognized protocol: "<protocol>""
+#'   * "Unrecognized protocol: "\code{<}protocol\code{>}""
 #' * for http/https connections:
 #'   * "Authorization failed."
 #' * for ssh connections:
 #'   * "Project directory was not found on server."
 #'   * Other exceptions thrown by ssh_connect.
 #' @inherit create_n_jobs examples
-create_connection = function(server, dir = "~/projects/rboinc", username, password = NULL, keyfile = NULL)
+create_connection = function(server,
+                             dir = "~/projects/rboinc",
+                             username,
+                             password = NULL,
+                             keyfile = NULL)
 {
   if(!grepl("^.*://.*:[0-9]+$", server) && !grepl("^.*://.*$", server) ){
     stop("Unsupported server address format.")
@@ -59,9 +67,15 @@ create_connection = function(server, dir = "~/projects/rboinc", username, passwo
   port = tmp[[1]][2]
   if(protocol == "ssh"){
     if(is.na(port)){
-      return(connect_ssh(paste0(username, "@", address), dir, password, keyfile))
+      return(connect_ssh(paste0(username, "@", address),
+                         dir,
+                         password,
+                         keyfile))
     } else{
-      return(connect_ssh(paste0(username, "@", address, ":", port), dir, password, keyfile))
+      return(connect_ssh(paste0(username, "@", address, ":", port),
+                         dir,
+                         password,
+                         keyfile))
     }
   } else if((protocol == "http") || (protocol == "https")){
     auth_page = paste0(protocol, "://", address)
@@ -77,8 +91,10 @@ create_connection = function(server, dir = "~/projects/rboinc", username, passwo
         stop("Connection was canceled by user.")
       }
     }
-    auth_res = POST(auth_page, config =  content_type("application/x-www-form-urlencoded"),
-                    body = paste0("email_addr=", username, "&passwd=", password), handle = handl)
+    auth_res = POST(auth_page,
+                    config =  content_type("application/x-www-form-urlencoded"),
+                    body = paste0("email_addr=", username, "&passwd=", password),
+                    handle = handl)
     if (is.na(match(auth_res$cookies["name"], "auth"))){
       stop("Authorization failed.")
     }
@@ -88,7 +104,10 @@ create_connection = function(server, dir = "~/projects/rboinc", username, passwo
   }
 }
 
-connect_ssh = function(host, dir = "~/projects/rboinc", password = NULL, keyfile = NULL)
+connect_ssh = function(host,
+                       dir = "~/projects/rboinc",
+                       password = NULL,
+                       keyfile = NULL)
 {
   if(is.null(password) && is.null(keyfile)){
     password = askpass()
@@ -121,7 +140,8 @@ close_connection = function(connection)
     ssh_disconnect(connection$connection)
   } else if(connection$type == "http"){
     # Find logout page reference
-    res = GET(url = paste0(connection$url, "/home.php"), handle = connection$handle)
+    res = GET(url = paste0(connection$url, "/home.php"),
+              handle = connection$handle)
     text = rawToChar(res$content)
     match = regexpr("http.*logout.php.*\">", text, perl = TRUE)
     url = regmatches(text, match)
