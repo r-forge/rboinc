@@ -12,9 +12,11 @@
 
 generate_r_script = function(original_work_func_name, init, glob_vars, packages)
 {
-  # doMC is not supported on Windows. This package can be installed, but it cannot provide multiprocessing under Windows.
-  # Instead, the code using doMC will be executed in one thread. This script tries to install it because testAPI.R needs this package.
-  str = "if(!require(doMC)){\n  install.packages(\"doMC\", repos = c('http://rforge.net', 'http://cran.rstudio.org'))\n  library(doMC)\n}\nlibrary(foreach)\n"
+  # doMC is not supported on Windows. This package can be installed, but it
+  # cannot provide multiprocessing under Windows. Instead, the code using doMC
+  # will be executed in one thread. This script tries to install it because
+  # testAPI.R needs this package.
+  str = "if(!require(doMC)){\n install.packages(\"doMC\", repos = c('http://rforge.net', 'http://cran.rstudio.org'))\n  library(doMC)\n}\nlibrary(foreach)\n"
   for(val in packages){
     str = paste0(str, "if(!require(", val, ")){\n\tinstall.packages(\"", val, "\", repos = c('http://rforge.net', 'http://cran.rstudio.org'))\n",
                  "  library(", val, ")\n}\n")
@@ -61,7 +63,13 @@ make_dirs = function()
   return(tmp_dir)
 }
 
-make_archive = function(RBOINC_work_func, original_work_func_name, data, RBOINC_init_func = NULL, RBOINC_global_vars = NULL, packages = c(), files = c())
+make_archive = function(RBOINC_work_func,
+                        original_work_func_name,
+                        data,
+                        RBOINC_init_func = NULL,
+                        RBOINC_global_vars = NULL,
+                        packages = c(),
+                        files = c())
 {
   if(!is.list(data)){
     return(NULL)
