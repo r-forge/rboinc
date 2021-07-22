@@ -1,6 +1,6 @@
 # Original file name: "connection.R"
 # Created: 2021.02.02
-# Last modified: 2021.06.04
+# Last modified: 2021.07.22
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -122,12 +122,13 @@ connect_ssh = function(host,
     connection = ssh_connect(host, keyfile, password)
   }
   if(!is.null(connection)){
-    if (ssh_exec_wait(connection, paste("cd ", dir)) != 0){
+    dir_name = ""
+    if (ssh_exec_wait(connection, paste("cd ", dir, " && pwd"), function(str){dir_name <<- rawToChar(str[1:(length(str)-1)])}) != 0){
       ssh_disconnect(connection)
       stop("Project directory was not found on server.")
     }
   }
-  return(list(type = "ssh", dir = dir, connection = connection))
+  return(list(type = "ssh", dir = dir_name, connection = connection))
 }
 
 #' @title close_connection

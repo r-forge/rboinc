@@ -1,6 +1,6 @@
 # Original file name: "fileUploading.R"
 # Created: 2021.02.03
-# Last modified: 2021.02.11
+# Last modified: 2021.07.22
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -14,31 +14,27 @@
 upload_work_ssh = function(connection, path_to_archive)
 {
   # Create directory for arhive
-  ssh_exec_wait(connection$connection, "mkdir -p ~/.rboinc_cache")
-  dir_name = ""
+  file_prefix = ""
   ssh_exec_wait(connection$connection,
-                "date +\"%G_%m_%d_%I_%M_%S_%N\"",
-                function(str){dir_name <<- rawToChar(str[1:(length(str)-1)])})
-  serv_dir = paste0("~/.rboinc_cache/", dir_name)
-  ssh_exec_wait(connection$connection, paste0("mkdir ",serv_dir))
+                paste0(connection$dir, "/rboinc/bin/get_file_prefix.sh"),
+                function(str){file_prefix <<- rawToChar(str)})
+  upload_dir = paste0(connection$dir, "/rboinc/uploads/", file_prefix)
+  ssh_exec_wait(connection$connection, paste0("mkdir ", upload_dir))
   # upload archive
   scp_upload(connection$connection,
              path_to_archive,
-             paste0(serv_dir, "/work.tar.xz"), verbose=FALSE)
+             paste0(upload_dir, "/work.tar.xz"), verbose=FALSE)
   # unpack archive
   ssh_exec_wait(connection$connection,
-                paste0("cd ",serv_dir, " && tar -xf ./work.tar.xz && rm work.tar.xz"))
-  return(serv_dir)
+                paste0("cd ", upload_dir, " && tar -xf ./work.tar.xz && rm work.tar.xz"))
+  return(list(upload_dir = upload_dir, file_prefix = file_prefix))
 }
 
-make_unique_file_names_ssh = function(connection, path, data_count)
+make_unique_file_names_ssh = function(connection, upload_info, data_count)
 {
   data = vector("list", data_count)
-  files_prefix = ""
-  cmd_line = paste0(connection$dir, "/rboinc/bin/get_file_prefix.sh")
-  ssh_exec_wait(connection$connection,
-                cmd_line,
-                function(str){files_prefix <<- rawToChar(str)})
+  files_prefix = upload_info$file_prefix
+  path = upload_info$upload_dir
   ssh_exec_wait(connection$connection,
                 paste0("mv ", path, "/common.tar.xz ", path , "/", files_prefix, "common.tar.xz"))
   for(k in 0:(data_count-1)){
@@ -52,12 +48,12 @@ make_unique_file_names_ssh = function(connection, path, data_count)
 
 stage_files_ssh = function(connection, path_to_archive, data_count)
 {
-  serv_path = upload_work_ssh(connection, path_to_archive)
-  files = make_unique_file_names_ssh(connection, serv_path, data_count)
+  upload_info = upload_work_ssh(connection, path_to_archive)
+  files = make_unique_file_names_ssh(connection, upload_info, data_count)
   ssh_exec_wait(connection$connection,
-                paste0("cd ", connection$dir, " && " , "./bin/stage_file ", serv_path))
+                paste0("cd ", connection$dir, " && " , "./bin/stage_file ", upload_info$upload_dir))
   ssh_exec_wait(connection$connection,
-                paste0("cd ", connection$dir, " && " , "./bin/stage_file ", serv_path, "/data"))
-  ssh_exec_wait(connection$connection, paste0("rm -r ", serv_path))
+                paste0("cd ", connection$dir, " && " , "./bin/stage_file ", upload_info$upload_dir, "/data"))
+  ssh_exec_wait(connection$connection, paste0("rm -r ", upload_info$upload_dir))
   return(files)
 }
