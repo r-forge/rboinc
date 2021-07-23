@@ -1,6 +1,6 @@
 # Original file name: "fileUploading.R"
 # Created: 2021.02.03
-# Last modified: 2021.07.22
+# Last modified: 2021.07.23
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -38,9 +38,9 @@ make_unique_file_names_ssh = function(connection, upload_info, data_count)
   ssh_exec_wait(connection$connection,
                 paste0("mv ", path, "/common.tar.xz ", path , "/", files_prefix, "common.tar.xz"))
   for(k in 0:(data_count-1)){
-    old_name = paste0(path, "/data/", k, ".rbs")
-    new_name = paste0(path, "/data/",files_prefix, k, ".rbs")
-    data[[k+1]] = paste0(files_prefix, k, ".rbs")
+    old_name = paste0(path, "/data/", k, ".rda")
+    new_name = paste0(path, "/data/",files_prefix, k, ".rda")
+    data[[k+1]] = paste0(files_prefix, k, ".rda")
     ssh_exec_wait(connection$connection, paste0("mv ", old_name, " ", new_name))
   }
   return(list(data=data, common = paste0(files_prefix, "common.tar.xz")))

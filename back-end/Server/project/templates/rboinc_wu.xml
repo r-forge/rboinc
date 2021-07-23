@@ -10,7 +10,7 @@
             <copy_file/>
         </file_ref>
 	<file_ref>
-            <open_name>shared/data.rbs</open_name>
+            <open_name>shared/data.rda</open_name>
             <copy_file/>
         </file_ref>
         <rsc_memory_bound>6442450944</rsc_memory_bound>

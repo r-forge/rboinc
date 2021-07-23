@@ -21,8 +21,8 @@ generate_r_script = function(original_work_func_name, init, glob_vars, packages)
     str = paste0(str, "if(!require(", val, ")){\n\tinstall.packages(\"", val, "\", repos = c('http://rforge.net', 'http://cran.rstudio.org'))\n",
                  "  library(", val, ")\n}\n")
   }
-  str = paste0(str, "load(\"code.rbs\")\n")
-  str = paste0(str, "load(\"data.rbs\")\n")
+  str = paste0(str, "load(\"code.rda\")\n")
+  str = paste0(str, "load(\"data.rda\")\n")
   str = paste0(str, "setwd(\"./files/\")\n")
   str = paste0(str, "registerDoMC(NULL)\n")
   str = paste0(str, original_work_func_name, " = RBOINC_work_func\n")
@@ -49,7 +49,7 @@ generate_r_script = function(original_work_func_name, init, glob_vars, packages)
   str = paste0(str, "  return(list(res = RBOINC_work_func(value$val), pos = value$pos))\n")
   str = paste0(str, "}\n")
   str = paste0(str, "setwd(\"../../shared/\")\n")
-  str = paste0(str, "save(result, file = \"result.rbs\", compress = \"xz\", compression_level = 9)\n")
+  str = paste0(str, "save(result, file = \"result.rda\", compress = \"xz\", compression_level = 9)\n")
   return(str)
 }
 
@@ -84,7 +84,7 @@ make_archive = function(RBOINC_work_func,
   if(!is.null(RBOINC_global_vars)){
     obj_list = cbind(obj_list, "RBOINC_global_vars")
   }
-  save(list = obj_list, file = paste0(tmp_dir, "/code.rbs"))
+  save(list = obj_list, file = paste0(tmp_dir, "/code.rda"))
   # save code
   out = file(paste0(tmp_dir, "/code.R"))
   writeLines(generate_r_script(original_work_func_name, RBOINC_init_func, RBOINC_global_vars, packages), out)
@@ -104,7 +104,7 @@ make_archive = function(RBOINC_work_func,
   data_dir = paste0(tmp_dir, "/data/")
   num = 0
   for(RBOINC_data in data){
-    save(RBOINC_data, file = paste0(data_dir, num, ".rbs"))
+    save(RBOINC_data, file = paste0(data_dir, num, ".rda"))
     num = num + 1
   }
   if(file.exists(paste0(tmp_dir, "/../rboinc-work.tar.xz"))){
@@ -116,7 +116,7 @@ make_archive = function(RBOINC_work_func,
   on.exit(setwd(old_wd), TRUE)
   setwd(tmp_dir)
   tryCatch({
-    tar(paste0(tmp_dir, "/common.tar.xz"),c("code.rbs", "code.R", "files"), compression="xz")
+    tar(paste0(tmp_dir, "/common.tar.xz"),c("code.rda", "code.R", "files"), compression="xz")
     tar(archive_path, c("common.tar.xz", "data"), compression="xz")
   }, error = function(mess){
     stop(paste0("Archive making error: \"", mess, "\""))

@@ -120,7 +120,7 @@ test_n_jobs = function(work_func,
     t = paste0(job_dir, "/", basename(val))
     printf("Running job %s in %s ", val, t)
     dir.create(t)
-    file.copy(paste0(tmpdir, "/data/", val), paste0(t, "/data.rbs"))
+    file.copy(paste0(tmpdir, "/data/", val), paste0(t, "/data.rda"))
     decompress(paste0(tmpdir, "/common.tar.xz"), exdir = t)
     dir.create(paste0(t, "/files"), FALSE)
     old_wd = getwd()
@@ -129,7 +129,7 @@ test_n_jobs = function(work_func,
     tryCatch({
       log = system(paste0("Rscript ", t, "/code.R "), TRUE)
       tmpenv = new.env()
-      obj_list = load(paste0(job_dir, "/shared/result.rbs"), tmpenv)
+      obj_list = load(paste0(job_dir, "/shared/result.rda"), tmpenv)
       if((length(obj_list) == 1) && (obj_list[1] == "result")){
         if(is.null(callback_function)){
           for(val in tmpenv$result){

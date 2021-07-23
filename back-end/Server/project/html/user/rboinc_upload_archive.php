@@ -1,7 +1,7 @@
 <?php
 // Original file name: "rboinc_upload_archive.php"
 // Created: 2021.02.15
-// Last modified: 2021.04.02
+// Last modified: 2021.07.23
 // License: BSD-3-clause
 // Written by: Astaf'ev Sergey <seryymail@mail.ru>
 // This is a part of RBOINC R package.
@@ -55,7 +55,7 @@ if(move_uploaded_file($_FILES['archive']['tmp_name'], $upload_file)){
   $result_xml .= "  <common>" . $file_prefix . "common.tar.xz</common>\n";
   $result_xml .= "  <data>\n";
   for($i = 0; $i < $data_count; $i++){
-    $result_xml .= "<val_" . $i . ">" . $file_prefix . $i . ".rbs</val_" . $i . ">\n";
+    $result_xml .= "<val_" . $i . ">" . $file_prefix . $i . ".rda</val_" . $i . ">\n";
   }
   $result_xml .= "  </data>\n";
   $result_xml .= "</staged_files>";

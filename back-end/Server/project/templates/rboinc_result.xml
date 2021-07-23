@@ -9,7 +9,7 @@
     <result>
         <file_ref>
             <file_name><OUTFILE_0/></file_name>
-            <open_name>shared/result.rbs</open_name>
+            <open_name>shared/result.rda</open_name>
             <copy_file/>
         </file_ref>
         <report_immediately/>
