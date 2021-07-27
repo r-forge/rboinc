@@ -1,7 +1,7 @@
 #!/bin/bash
 # Original file name: "prepare_release.sh"
 # Created: 2021.06.03
-# Last modified: 2021.07.14
+# Last modified: 2021.07.27
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -14,6 +14,7 @@ emerge --depclean --deep
 echo "Cleaning portage cache:"
 eclean distfiles
 eclean packages
+eselect news purge
 rm /var/cache/distfiles/*
 echo "Cleaning logs:"
 truncate -s 0 /var/log/emerge.log

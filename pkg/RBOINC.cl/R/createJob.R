@@ -96,7 +96,7 @@ register_jobs_ssh = function(connection, files)
   ssh_exec_wait(connection$connection,
                 "date +\"%G_%m_%d_%I_%M_%S_%N\"",
                 function(str){job_file <<- rawToChar(str[1:(length(str)-1)])})
-  job_file = paste0("~/.rboinc_cache/", job_file)
+  job_file = paste0(connection$dir, "/rboinc/uploads/", job_file)
   # Write file
   cmd_list = character(length(files$data))
   for(k in seq_len(length(files$data))){
