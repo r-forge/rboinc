@@ -91,22 +91,18 @@ register_jobs_ssh = function(connection, files)
   ssh_exec_wait(connection$connection,
                 paste0(connection$dir, "/rboinc/bin/get_job_name.sh"),
                 function(str){job_name <<- rawToChar(str)})
-  # Create file for job registration
-  job_file = ""
-  ssh_exec_wait(connection$connection,
-                "date +\"%G_%m_%d_%I_%M_%S_%N\"",
-                function(str){job_file <<- rawToChar(str[1:(length(str)-1)])})
-  job_file = paste0(connection$dir, "/rboinc/uploads/", job_file)
-  # Write file
-  cmd_list = character(length(files$data))
+  # Create string for job registration
+  jobs_text = ""
   for(k in seq_len(length(files$data))){
     jobs[k] = paste0(job_name, "_", k)
-    cmd_list[k] = paste0("echo --wu_name ", jobs[k], " ", files$common, " ", files$data[[k]], " >> ", job_file)
+    jobs_text = paste0(jobs_text, "--wu_name ", jobs[k], " ", files$common, " ", files$data[[k]], "\\n")
   }
-  ssh_exec_wait(connection$connection, cmd_list)
   # Register jobs
-  ssh_exec_wait(connection$connection, paste0( "cd ", connection$dir, " && ./bin/create_work --appname rboinc --wu_template ./templates/rboinc_wu.xml --result_template ./templates/rboinc_result.xml --stdin <", job_file))
-  ssh_exec_wait(connection$connection, paste0("rm ", job_file))
+  cmd_str = paste0( "cd ", connection$dir, " && ")
+  cmd_str = paste0(cmd_str, "./bin/create_work --appname rboinc --wu_template ./templates/rboinc_wu.xml ",
+                   "--result_template ./templates/rboinc_result.xml --stdin ")
+  cmd_str = paste0(cmd_str, "<<<`echo -en '", jobs_text, "'`")
+  ssh_exec_wait(connection$connection, cmd_str)
   return(jobs)
 }
 

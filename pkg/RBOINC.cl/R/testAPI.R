@@ -43,6 +43,8 @@ test_n_jobs = function(work_func,
                        files = c(),
                        callback_function = NULL)
 {
+  old_wd = getwd()
+  on.exit(setwd(old_wd), TRUE)
   printf("Testing archive making...\t")
   lst = split_list(data, n)
   ar = make_archive(work_func,
@@ -123,8 +125,6 @@ test_n_jobs = function(work_func,
     file.copy(paste0(tmpdir, "/data/", val), paste0(t, "/data.rda"))
     decompress(paste0(tmpdir, "/common.tar.xz"), exdir = t)
     dir.create(paste0(t, "/files"), FALSE)
-    old_wd = getwd()
-    on.exit(setwd(old_wd), TRUE)
     setwd(t)
     tryCatch({
       log = system(paste0("Rscript ", t, "/code.R "), TRUE)
