@@ -1,6 +1,6 @@
 # Original file name: "createJob.R"
 # Created: 2021.02.04
-# Last modified: 2021.07.20
+# Last modified: 2021.07.29
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -26,11 +26,13 @@ create_job_xml = function(auth, files)
   request = paste0(request,   "<authenticator>", auth,"</authenticator>")
   request = paste0(request,   "<batch>")
   request = paste0(request,     "<app_name>rboinc</app_name>")
-  request = paste0(request,     "<batch_name>", format(Sys.time(), "rboinc_%s"), ".",ceiling(runif(1, 0, 10000000)),"</batch_name>")
+  request = paste0(request,     "<batch_name>", files$batch_name,"</batch_name>")
   request = paste0(request,     "<output_template_filename>rboinc_result.xml</output_template_filename>")
   request = paste0(request,     "<input_template_filename>rboinc_wu.xml</input_template_filename>")
+  k = 1
   for(val in files$data){
     request = paste0(request,   "<job>")
+    request = paste0(request,     "<name>", files$batch_name, "_", k,"</name>")
     request = paste0(request,     "<input_file>")
     request = paste0(request,       "<mode>local_staged</mode>")
     request = paste0(request,       "<source>", files$common,"</source>")
@@ -40,18 +42,19 @@ create_job_xml = function(auth, files)
     request = paste0(request,       "<source>", val,"</source>")
     request = paste0(request,     "</input_file>")
     request = paste0(request,   "</job>")
+    k = k + 1
   }
   request = paste0(request,   "</batch>")
   request = paste0(request, "</submit_batch>")
 }
 
-register_jobs_http = function(connection, files)
+register_jobs_http = function(connection, xml_data)
 {
   # Get user auth ID
   cook = cookies(connection$handle)
   auth = cook[cook["name"]=="auth", "value"]
   # Registry jobs
-  request = create_job_xml(auth, files$staged_files)
+  request = create_job_xml(auth, xml_data$staged_files)
   batch = content(POST(url = paste0(connection$url,"/submit_rpc_handler.php"),
                        body = list(request = request),
                        handle = connection$handle))
@@ -266,15 +269,15 @@ create_n_jobs = function(connection,
     if(response$status_code == 403){
       stop("You can not create jobs.")
     }
-    files = as_list(content(response))
+    xml_data = as_list(content(response))
     # Get jobs names
-    jobs = register_jobs_http(connection, files)
+    jobs = register_jobs_http(connection, xml_data)
   } else {
     stop ("Unknown protocol.")
   }
   ret = list(jobs_name = jobs,
              results = vector("list", length = result_count),
-             jobs_status = character(length(files$data)),
+             jobs_status = character(length(xml_data$data)),
              jobs_code = rep(-1, length(jobs)),
              status = "initialization")
   return(ret)

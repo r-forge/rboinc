@@ -60,11 +60,11 @@ if(move_uploaded_file($_FILES['archive']['tmp_name'], $upload_file)){
     $result_xml .=    "<common>" . $file_prefix . "common.tar.xz</common>";
     $result_xml .=    "<data>";
     for($i = 0; $i < $data_count; $i++){
-        $result_xml .="<val_" . $i . ">" . $file_prefix . $i . ".rda</val_" . $i . ">";
+        $result_xml .=   "<val_" . $i . ">" . $file_prefix . $i . ".rda</val_" . $i . ">";
     }
     $result_xml .=    "</data>";
+    $result_xml .=    "<batch_name>" . get_job_name() . "</batch_name>";
     $result_xml .= "</staged_files>";
-    $result_xml .= "<batch_name>" . get_job_name() . "</batch_name>";
     // Stage files
     chdir($project_dir);
     exec("bin/stage_file " . $upload_dir . "/" . $file_prefix . "common.tar.xz");

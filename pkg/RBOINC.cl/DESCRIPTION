@@ -1,6 +1,6 @@
 Package: RBOINC.cl
-Title: This Package Allow you to Run your Tasks at BOINC Server. Current Status: Alpha-2
-Version: 0.0.0.20210723
+Title: This Package Allow you to Run your Tasks at BOINC Server. Current Status: Alpha-3
+Version: 0.0.0.20210729
 URL: https://r-forge.r-project.org/R/?group_id=540
 Authors@R: 
     c(person(given = "Sergey",
@@ -14,7 +14,13 @@ Authors@R:
            email = "ar0@krc.karelia.ru",
            comment = c(ORCID = "https://orcid.org/0000-0003-2364-5939"))
            )
-Description: Running tasks on a BOINC server. This software consist of 3 parts. The server part must be installed at BOINC server before using this package. You must also build your custom virtual machine with R and install vm part at this machine. Virtual machine is a part of BOINC application, therefore you must download it to your BOINC server. Use example in this package to test your BOINC configuration.
+Description: Running tasks on a BOINC server. This software consist of 3 parts. 
+The server part must be installed at BOINC server before using this package. 
+You must also build your custom virtual machine with R and install vm part at 
+this machine (pre-built VMs can be found here:
+https://disk.yandex.ru/d/e_aItFuMPfKF2A). Virtual machine is a part of BOINC 
+application, therefore you must download it to your BOINC server. Use example in
+this package to test your BOINC configuration.
 Imports: R.utils, askpass, foreach, httr, ssh, xml2, stats, utils
 License: BSD_3_clause + file LICENSE
 Encoding: UTF-8
