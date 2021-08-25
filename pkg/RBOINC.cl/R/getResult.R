@@ -58,13 +58,12 @@ download_result = function(connection, file, job_name, callback_function)
 #' @title update_jobs_status
 #' @description Update status for jobs and get result for complete jobs.
 #' @param connection a connection created by create_connection.
-#' @param jobs_status a list returned by create_jobs, create_n_jobs or
-#' update_jobs_status.
+#' @param jobs_status a list returned by create_jobs or update_jobs_status.
 #' @param callback_function a function that is called for each result after
 #' loading. This function must take one argument, which is the result of the
 #' work performed. The value returned by this function is placed in the result
 #' list.
-#' @inherit create_n_jobs return
+#' @inherit create_jobs return
 #' @details
 #' When errors occur, execution can be stopped with the following messages:
 #' * for unknown connections:
@@ -75,7 +74,7 @@ download_result = function(connection, file, job_name, callback_function)
 #' * for any connection:
 #'   * Failed to download the result: "\code{<}error message\code{>}"
 #'
-#' @inherit create_n_jobs examples
+#' @inherit create_jobs examples
 update_jobs_status = function(connection, jobs_status, callback_function = NULL)
 {
   for(k in seq_len(length(jobs_status$jobs_name))){

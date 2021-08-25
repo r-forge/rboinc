@@ -1,6 +1,6 @@
 # Original file name: "testAPI.R"
 # Created: 2021.03.19
-# Last modified: 2021.06.07
+# Last modified: 2021.08.25
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -17,15 +17,14 @@
 #' @importFrom foreach foreach
 
 #' @export test_jobs
-#' @export test_n_jobs
 
-#' @title test_n_jobs
+#' @title test_jobs
 #' @description Like create_n_jobs, it creates a jobs for the BOINC server but
 #' does not submit them. Instead, it runs all jobs locally and generates a
 #' report at each step. This function is intended for debugging applications
 #' that use RBOINC. Files created by this function are not deleted after its
 #' completion.
-#' @inherit create_n_jobs params
+#' @inherit create_jobs params
 #' @inherit update_jobs_status params
 #' @return a list with states of jobs. This list contains the following fields:
 #' * log - Rscript output;
@@ -33,10 +32,10 @@
 #' When errors occur, execution can be stopped with the following messages:
 #' * for any connection:
 #'   * "Archive making error: \code{<}error message\code{>}"
-#' @inherit create_n_jobs examples
-test_n_jobs = function(work_func,
+#' @inherit create_jobs examples
+test_jobs = function(work_func,
                        data,
-                       n,
+                       n = NULL,
                        init_func = NULL,
                        global_vars = NULL,
                        packages = c(),
@@ -45,6 +44,9 @@ test_n_jobs = function(work_func,
 {
   old_wd = getwd()
   on.exit(setwd(old_wd), TRUE)
+  if(is.null(n)){
+    n = length(data)
+  }
   printf("Testing archive making...\t")
   lst = split_list(data, n)
   ar = make_archive(work_func,
@@ -151,33 +153,4 @@ test_n_jobs = function(work_func,
     )
   }
   return(result)
-}
-
-#' @title test_jobs
-#' @description Like create_jobs, it creates a job for the BOINC server but does
-#' not submit it. Instead, it runs the job locally and generates a report at
-#' each step. This function is intended for debugging applications that use
-#' RBOINC. Files created by this function are not deleted after its completion.
-#' @inherit test_n_jobs params
-#' @inherit test_n_jobs return
-#' @details
-#' When errors occur, execution can be stopped with the following messages:
-#' * for any connection:
-#'   * "Archive making error: \code{<}error message\code{>}"
-#' @inherit create_n_jobs examples
-test_jobs = function(work_func,
-                     data,
-                     init_func = NULL,
-                     global_vars = NULL,
-                     packages = c(),
-                     files = c(),
-                     callback_function = NULL)
-{
-  return(test_n_jobs(work_func,
-                     data, length(data),
-                     init_func,
-                     global_vars,
-                     packages,
-                     files,
-                     callback_function))
 }

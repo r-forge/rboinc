@@ -89,9 +89,9 @@ print_func = function(val)
 }
 
 # Test jobs before sending
-jobs_t = test_jobs(fun, data, init, glob_vars, callback_function = print_func)
+jobs_t = test_jobs(fun, data, init_func = init, global_vars = glob_vars, callback_function = print_func)
 jobs_t
-jobs_t = test_n_jobs(fun, data, 1, init, glob_vars, callback_function = print_func)
+jobs_t = test_jobs(fun, data, 1, init, glob_vars, callback_function = print_func)
 jobs_t
 
 # Create connection:
@@ -99,8 +99,8 @@ jobs_t
 #con = create_connection("http://boinc.local", "myproject", "submitter@example.com","000000")# http
 con
 # send jobs:
-#jobs = create_jobs(con, fun, data, init, glob_vars)
-#jobs = create_n_jobs(con, fun, data, 1, init, glob_vars)
+#jobs = create_jobs(con, fun, data, init_func = init, global_vars = glob_vars)
+#jobs = create_jobs(con, fun, data, 1, init, glob_vars)
 jobs
 # Get jobs status. Run this until status not equal "done":
 jobs = update_jobs_status(con, jobs)

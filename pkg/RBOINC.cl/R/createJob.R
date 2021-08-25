@@ -1,6 +1,6 @@
 # Original file name: "createJob.R"
 # Created: 2021.02.04
-# Last modified: 2021.07.29
+# Last modified: 2021.08.25
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -18,7 +18,6 @@
 #' @importFrom stats runif
 
 #' @export create_jobs
-#' @export create_n_jobs
 
 create_job_xml = function(auth, files)
 {
@@ -142,7 +141,7 @@ split_list = function(data, n)
   return(ret)
 }
 
-#' @title create_n_jobs
+#' @title create_jobs
 #' @description This function automatically breaks the data into n parts and
 #' creates n jobs.
 #' @param connection a connection created by create_connection.
@@ -150,7 +149,8 @@ split_list = function(data, n)
 #' element in data. This function can be recursive.
 #' @param data data for processing.  Must be a numerable list or vector.
 #' @param n a number of jobs. This parameter must be less than or equal to the
-#' length of the data.
+#' length of the data. If not specified, then the number of jobs will be equal
+#' to the length of the data.
 #' @param init_func initialization function. This function runs once at the
 #' start of a job before the job is split into separate threads. Necessary for
 #' additional initialization, for example, for compiling C++ functions from
@@ -184,6 +184,7 @@ split_list = function(data, n)
 #'   * "Unknown protocol."
 #' * for any connection:
 #'   * "The number of tasks must be greater than 0."
+#'   * "The number of tasks must be less than or equal to the length of the data."
 #'   * "Archive making error: \code{<}error message\code{>}"
 #'
 #' @examples
@@ -215,9 +216,9 @@ split_list = function(data, n)
 #' }
 #'
 #' # Test jobs before sending
-#' jobs_t = test_jobs(fun, data, init, glob_vars, callback_function = print_func)
+#' jobs_t = test_jobs(fun, data, init_func = init, global_vars = glob_vars, callback_function = print_func)
 #' jobs_t
-#' jobs_t = test_n_jobs(fun, data, 1, init, glob_vars, callback_function = print_func)
+#' jobs_t = test_jobs(fun, data, 1, init, glob_vars, callback_function = print_func)
 #' jobs_t
 #'
 #' # Create connection:
@@ -225,8 +226,8 @@ split_list = function(data, n)
 #' #con = create_connection("http://boinc.local", "myproject", "submitter@example.com","000000")# http
 #' con
 #' # send jobs:
-#' #jobs = create_jobs(con, fun, data, init, glob_vars)
-#' #jobs = create_n_jobs(con, fun, data, 1, init, glob_vars)
+#' #jobs = create_jobs(con, fun, data, init_func = init, global_vars = glob_vars)
+#' #jobs = create_jobs(con, fun, data, 1, init, glob_vars)
 #' jobs
 #' # Get jobs status. Run this until status not equal "done":
 #' jobs = update_jobs_status(con, jobs)
@@ -234,17 +235,24 @@ split_list = function(data, n)
 #' # Close connection:
 #' close_connection(con)
 #' }
-create_n_jobs = function(connection,
+create_jobs = function(connection,
                          work_func,
                          data,
-                         n,
+                         n = NULL,
                          init_func = NULL,
                          global_vars = NULL,
                          packages = c(),
                          files = c())
 {
-  if(n < 1){
+  if(is.null(n)){
+    n = length(data)
+  } else if(n < 1){
     stop("The number of tasks must be greater than 0.")
+  } else if(n > length(data)){
+    stop("The number of tasks must be less or equal than length of data.")
+  }
+  if((connection$type != "ssh") && (connection$type != "http")){
+    stop ("Unknown protocol.")
   }
   result_count = length(data)
   lst = split_list(data, n)
@@ -272,8 +280,6 @@ create_n_jobs = function(connection,
     xml_data = as_list(content(response))
     # Get jobs names
     jobs = register_jobs_http(connection, xml_data)
-  } else {
-    stop ("Unknown protocol.")
   }
   ret = list(jobs_name = jobs,
              results = vector("list", length = result_count),
@@ -281,29 +287,4 @@ create_n_jobs = function(connection,
              jobs_code = rep(-1, length(jobs)),
              status = "initialization")
   return(ret)
-}
-
-
-#' @title create_jobs
-#' @description Send job to BOINC server for parallel processing. This function
-#' creates the number of tasks equal to the length of the data.
-#' @inherit create_n_jobs params
-#' @inherit create_n_jobs return
-#' @inherit create_n_jobs examples
-create_jobs = function(connection,
-                       work_func,
-                       data,
-                       init_func = NULL,
-                       global_vars = NULL,
-                       packages = c(),
-                       files = c())
-{
-  return(create_n_jobs(connection,
-                       work_func,
-                       data,
-                       length(data),
-                       init_func,
-                       global_vars,
-                       packages,
-                       files))
 }

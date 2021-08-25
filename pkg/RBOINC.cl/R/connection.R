@@ -49,7 +49,7 @@
 #' * for ssh connections:
 #'   * "Project directory was not found on server."
 #'   * Other exceptions thrown by ssh_connect.
-#' @inherit create_n_jobs examples
+#' @inherit create_jobs examples
 create_connection = function(server,
                              dir = "~/projects/rboinc",
                              username,
@@ -134,7 +134,7 @@ connect_ssh = function(host,
 #' @title close_connection
 #' @description Disconnect from the server.
 #' @param connection a connection created by create_connection
-#' @inherit create_n_jobs examples
+#' @inherit create_jobs examples
 close_connection = function(connection)
 {
   if(connection$type == "ssh"){

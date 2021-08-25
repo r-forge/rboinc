@@ -7,6 +7,7 @@
 test_jobs(
   work_func,
   data,
+  n = NULL,
   init_func = NULL,
   global_vars = NULL,
   packages = c(),
@@ -19,6 +20,10 @@ test_jobs(
 element in data. This function can be recursive.}
 
 \item{data}{data for processing.  Must be a numerable list or vector.}
+
+\item{n}{a number of jobs. This parameter must be less than or equal to the
+length of the data. If not specified, then the number of jobs will be equal
+to the length of the data.}
 
 \item{init_func}{initialization function. This function runs once at the
 start of a job before the job is split into separate threads. Necessary for
@@ -52,19 +57,11 @@ When errors occur, execution can be stopped with the following messages:
 }
 }
 \description{
-Like create_jobs, it creates a job for the BOINC server but does
-not submit it. Instead, it runs the job locally and generates a report at
-each step. This function is intended for debugging applications that use
-RBOINC. Files created by this function are not deleted after its completion.
-}
-\details{
-When errors occur, execution can be stopped with the following messages:
-\itemize{
-\item for any connection:
-\itemize{
-\item "Archive making error: \code{<}error message\code{>}"
-}
-}
+Like create_n_jobs, it creates a jobs for the BOINC server but
+does not submit them. Instead, it runs all jobs locally and generates a
+report at each step. This function is intended for debugging applications
+that use RBOINC. Files created by this function are not deleted after its
+completion.
 }
 \examples{
 \dontrun{
@@ -95,9 +92,9 @@ print_func = function(val)
 }
 
 # Test jobs before sending
-jobs_t = test_jobs(fun, data, init, glob_vars, callback_function = print_func)
+jobs_t = test_jobs(fun, data, init_func = init, global_vars = glob_vars, callback_function = print_func)
 jobs_t
-jobs_t = test_n_jobs(fun, data, 1, init, glob_vars, callback_function = print_func)
+jobs_t = test_jobs(fun, data, 1, init, glob_vars, callback_function = print_func)
 jobs_t
 
 # Create connection:
@@ -105,8 +102,8 @@ jobs_t
 #con = create_connection("http://boinc.local", "myproject", "submitter@example.com","000000")# http
 con
 # send jobs:
-#jobs = create_jobs(con, fun, data, init, glob_vars)
-#jobs = create_n_jobs(con, fun, data, 1, init, glob_vars)
+#jobs = create_jobs(con, fun, data, init_func = init, global_vars = glob_vars)
+#jobs = create_jobs(con, fun, data, 1, init, glob_vars)
 jobs
 # Get jobs status. Run this until status not equal "done":
 jobs = update_jobs_status(con, jobs)

@@ -8,6 +8,7 @@ create_jobs(
   connection,
   work_func,
   data,
+  n = NULL,
   init_func = NULL,
   global_vars = NULL,
   packages = c(),
@@ -21,6 +22,10 @@ create_jobs(
 element in data. This function can be recursive.}
 
 \item{data}{data for processing.  Must be a numerable list or vector.}
+
+\item{n}{a number of jobs. This parameter must be less than or equal to the
+length of the data. If not specified, then the number of jobs will be equal
+to the length of the data.}
 
 \item{init_func}{initialization function. This function runs once at the
 start of a job before the job is split into separate threads. Necessary for
@@ -57,8 +62,28 @@ status was not requested by update_jobs_status.
 }
 }
 \description{
-Send job to BOINC server for parallel processing. This function
-creates the number of tasks equal to the length of the data.
+This function automatically breaks the data into n parts and
+creates n jobs.
+}
+\details{
+When errors occur, execution can be stopped with the following messages:
+\itemize{
+\item for http connections:
+\itemize{
+\item "You can not create jobs."
+\item "BOINC server error: "\code{<}server message\code{>}"."
+}
+\item for unknown connections:
+\itemize{
+\item "Unknown protocol."
+}
+\item for any connection:
+\itemize{
+\item "The number of tasks must be greater than 0."
+\item "The number of tasks must be less than or equal to the length of the data."
+\item "Archive making error: \code{<}error message\code{>}"
+}
+}
 }
 \examples{
 \dontrun{
@@ -89,9 +114,9 @@ print_func = function(val)
 }
 
 # Test jobs before sending
-jobs_t = test_jobs(fun, data, init, glob_vars, callback_function = print_func)
+jobs_t = test_jobs(fun, data, init_func = init, global_vars = glob_vars, callback_function = print_func)
 jobs_t
-jobs_t = test_n_jobs(fun, data, 1, init, glob_vars, callback_function = print_func)
+jobs_t = test_jobs(fun, data, 1, init, glob_vars, callback_function = print_func)
 jobs_t
 
 # Create connection:
@@ -99,8 +124,8 @@ jobs_t
 #con = create_connection("http://boinc.local", "myproject", "submitter@example.com","000000")# http
 con
 # send jobs:
-#jobs = create_jobs(con, fun, data, init, glob_vars)
-#jobs = create_n_jobs(con, fun, data, 1, init, glob_vars)
+#jobs = create_jobs(con, fun, data, init_func = init, global_vars = glob_vars)
+#jobs = create_jobs(con, fun, data, 1, init, glob_vars)
 jobs
 # Get jobs status. Run this until status not equal "done":
 jobs = update_jobs_status(con, jobs)
