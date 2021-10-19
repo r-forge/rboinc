@@ -1,6 +1,6 @@
 # Original file name: "createJob.R"
 # Created: 2021.02.04
-# Last modified: 2021.08.25
+# Last modified: 2021.10.19
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -21,30 +21,34 @@
 
 create_job_xml = function(auth, files)
 {
-  request =                 "<submit_batch>"
-  request = paste0(request,   "<authenticator>", auth,"</authenticator>")
-  request = paste0(request,   "<batch>")
-  request = paste0(request,     "<app_name>rboinc</app_name>")
-  request = paste0(request,     "<batch_name>", files$batch_name,"</batch_name>")
-  request = paste0(request,     "<output_template_filename>rboinc_result.xml</output_template_filename>")
-  request = paste0(request,     "<input_template_filename>rboinc_wu.xml</input_template_filename>")
+  request = paste0(
+    "<submit_batch>",
+      "<authenticator>", auth,"</authenticator>",
+      "<batch>",
+        "<app_name>rboinc</app_name>",
+        "<batch_name>", files$batch_name,"</batch_name>",
+        "<output_template_filename>rboinc_result.xml</output_template_filename>",
+        "<input_template_filename>rboinc_wu.xml</input_template_filename>")
   k = 1
   for(val in files$data){
-    request = paste0(request,   "<job>")
-    request = paste0(request,     "<name>", files$batch_name, "_", k,"</name>")
-    request = paste0(request,     "<input_file>")
-    request = paste0(request,       "<mode>local_staged</mode>")
-    request = paste0(request,       "<source>", files$common,"</source>")
-    request = paste0(request,     "</input_file>")
-    request = paste0(request,     "<input_file>")
-    request = paste0(request,       "<mode>local_staged</mode>")
-    request = paste0(request,       "<source>", val,"</source>")
-    request = paste0(request,     "</input_file>")
-    request = paste0(request,   "</job>")
+    request = paste0(request,
+        "<job>",
+          "<name>", files$batch_name, "_", k,"</name>",
+          "<input_file>",
+            "<mode>local_staged</mode>",
+            "<source>", files$common,"</source>",
+          "</input_file>",
+          "<input_file>",
+            "<mode>local_staged</mode>",
+            "<source>", val,"</source>",
+          "</input_file>",
+        "</job>")
     k = k + 1
   }
-  request = paste0(request,   "</batch>")
-  request = paste0(request, "</submit_batch>")
+  request = paste0(request,
+      "</batch>",
+    "</submit_batch>")
+  return(request)
 }
 
 register_jobs_http = function(connection, xml_data)
@@ -63,11 +67,12 @@ register_jobs_http = function(connection, xml_data)
     stop("BOINC server error: \"", tmp$error$error_msg[[1]], "\".")
   }
   # Get jobs statuses
-  query_xml =                   "<query_batch>"
-  query_xml = paste0(query_xml,   "<authenticator>", auth, "</authenticator>")
-  query_xml = paste0(query_xml,   "<batch_id>", as_list(batch)$submit_batch$batch_id[[1]], "</batch_id>")
-  query_xml = paste0(query_xml,   "<get_job_details>1</get_job_details>")
-  query_xml = paste0(query_xml, "</query_batch>")
+  query_xml = paste0(
+    "<query_batch>",
+      "<authenticator>", auth, "</authenticator>",
+      "<batch_id>", as_list(batch)$submit_batch$batch_id[[1]], "</batch_id>",
+      "<get_job_details>1</get_job_details>",
+    "</query_batch>")
   jobs = content(POST(url = paste0(connection$url,"/submit_rpc_handler.php"),
                       body = list(request = query_xml),
                       handle = connection$handle))
@@ -80,7 +85,7 @@ register_jobs_http = function(connection, xml_data)
     jobs_name[k] = val$name[[1]]
     #jobs_status[k] = val$status[[1]]
   }
-  return(jobs_name)
+  return(list(jobs_name = jobs_name, batch_id = as_list(batch)$submit_batch$batch_id[[1]]))
 }
 
 
@@ -105,7 +110,7 @@ register_jobs_ssh = function(connection, files)
                    "--result_template ./templates/rboinc_result.xml --stdin ")
   cmd_str = paste0(cmd_str, "<<<`echo -en '", jobs_text, "'`")
   ssh_exec_wait(connection$connection, cmd_str)
-  return(jobs)
+  return(list(jobs_name = jobs, batch_id = NULL))
 }
 
 split_list = function(data, n)
@@ -263,11 +268,13 @@ create_jobs = function(connection,
                     global_vars,
                     packages,
                     files)
+  status = ""
   if(connection$type == "ssh"){
     # Send archive to server
     files = stage_files_ssh(connection, ar, n)
     # Get jobs names
     jobs = register_jobs_ssh(connection, files)
+    status = "initialization"
   } else if (connection$type == "http"){
     # Send archive to server
     response = POST(url = paste0(connection$url, "/rboinc_upload_archive.php"),
@@ -280,10 +287,12 @@ create_jobs = function(connection,
     xml_data = as_list(content(response))
     # Get jobs names
     jobs = register_jobs_http(connection, xml_data)
+    status =  character(length(xml_data$data))
   }
-  ret = list(jobs_name = jobs,
+  ret = list(batch_id = jobs$batch_id,
+             jobs_name = jobs$jobs_name,
              results = vector("list", length = result_count),
-             jobs_status = character(length(xml_data$data)),
+             jobs_status = status,
              jobs_code = rep(-1, length(jobs)),
              status = "initialization")
   return(ret)

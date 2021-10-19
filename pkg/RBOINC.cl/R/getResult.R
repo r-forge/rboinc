@@ -1,6 +1,6 @@
 # Original file name: "getResult.R"
 # Created: 2021.02.08
-# Last modified: 2021.07.20
+# Last modified: 2021.10.19
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -55,6 +55,34 @@ download_result = function(connection, file, job_name, callback_function)
   }
 }
 
+retire_batch_http = function(connection, jobs){
+  # Get user auth ID
+  cook = cookies(connection$handle)
+  auth = cook[cook["name"]=="auth", "value"]
+  # Make request to retire batch
+  request = paste0(
+    "<retire_batch>",
+      "<authenticator>", auth,"</authenticator>",
+      "<batch_id>", jobs$batch_id,"</batch_id>",
+    "</retire_batch>")
+  content(POST(url = paste0(connection$url,"/submit_rpc_handler.php"),
+               body = list(request = request),
+               handle = connection$handle))
+}
+
+retire_batch_ssh = function(connection, jobs){
+  # Unlike the http version, this is a crutch. I did not find an api for
+  # deleting files of a specific job, only for deleting the entire batch
+  # of jobs. So I just cancel the job when I no longer need it. TODO: Rewrite
+  # create_job_ssh so that it creates a batch of jobs rather than individual
+  # jobs
+  for(val in jobs$jobs_name){
+    ssh_exec_wait(connection$connection,
+                  paste0("cd ", connection$dir, " && " ,
+                         "./bin/cancel_jobs --name ", val))
+  }
+}
+
 #' @title update_jobs_status
 #' @description Update status for jobs and get result for complete jobs.
 #' @param connection a connection created by create_connection.
@@ -70,6 +98,7 @@ download_result = function(connection, file, job_name, callback_function)
 #'   * "Unknown protocol."
 #' * for any connection:
 #'   * "The number of tasks must be greater than 0."
+#'   * "All results have already been received."
 #' This function can output the following warnings:
 #' * for any connection:
 #'   * Failed to download the result: "\code{<}error message\code{>}"
@@ -77,6 +106,9 @@ download_result = function(connection, file, job_name, callback_function)
 #' @inherit create_jobs examples
 update_jobs_status = function(connection, jobs_status, callback_function = NULL)
 {
+  if(jobs_status$status == "done"){
+    stop("All results have already been received.")
+  }
   for(k in seq_len(length(jobs_status$jobs_name))){
     mess = ""
     job_state = 0
@@ -95,10 +127,11 @@ update_jobs_status = function(connection, jobs_status, callback_function = NULL)
       cook = cookies(connection$handle)
       auth = cook[cook["name"]=="auth", "value"]
       # Create request text
-      get_job_xml =                     "<query_completed_job>"
-      get_job_xml = paste0(get_job_xml,   "<authenticator>", auth, "</authenticator>")
-      get_job_xml = paste0(get_job_xml,   "<job_name>", jobs_status$jobs_name[k], "</job_name>")
-      get_job_xml = paste0(get_job_xml, "</query_completed_job>")
+      get_job_xml = paste0(
+        "<query_completed_job>",
+          "<authenticator>", auth, "</authenticator>",
+          "<job_name>", jobs_status$jobs_name[k], "</job_name>",
+        "</query_completed_job>")
       response = content(POST(url = paste0(connection$url,"/submit_rpc_handler.php"),
                               body = list(request = get_job_xml),
                               handle = connection$handle))
@@ -143,6 +176,16 @@ update_jobs_status = function(connection, jobs_status, callback_function = NULL)
       jobs_status$status = "in_progress"
     } else if(val != 0){
       jobs_status$status = "error"
+    }
+  }
+  # File deletion from server:
+  if(jobs_status$status == "done"){
+    if(connection$type == "http"){
+      retire_batch_http(connection, jobs_status)
+    }else if(connection$type == "ssh"){
+      retire_batch_ssh(connection, jobs_status)
+    } else{
+      stop ("Unknown protocol.")
     }
   }
   return(jobs_status)

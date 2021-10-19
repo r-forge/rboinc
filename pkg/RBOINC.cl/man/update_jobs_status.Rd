@@ -49,6 +49,7 @@ When errors occur, execution can be stopped with the following messages:
 \item for any connection:
 \itemize{
 \item "The number of tasks must be greater than 0."
+\item "All results have already been received."
 This function can output the following warnings:
 }
 \item for any connection:
