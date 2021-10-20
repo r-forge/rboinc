@@ -1,6 +1,6 @@
 # Original file name: "getResult.R"
 # Created: 2021.02.08
-# Last modified: 2021.10.19
+# Last modified: 2021.10.20
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -11,8 +11,6 @@
 #' @importFrom ssh ssh_exec_wait
 #' @importFrom ssh scp_download
 #' @importFrom httr GET
-#' @importFrom httr POST
-#' @importFrom httr cookies
 #' @importFrom httr write_disk
 #' @importFrom xml2 as_list
 
@@ -55,34 +53,6 @@ download_result = function(connection, file, job_name, callback_function)
   }
 }
 
-retire_batch_http = function(connection, jobs){
-  # Get user auth ID
-  cook = cookies(connection$handle)
-  auth = cook[cook["name"]=="auth", "value"]
-  # Make request to retire batch
-  request = paste0(
-    "<retire_batch>",
-      "<authenticator>", auth,"</authenticator>",
-      "<batch_id>", jobs$batch_id,"</batch_id>",
-    "</retire_batch>")
-  content(POST(url = paste0(connection$url,"/submit_rpc_handler.php"),
-               body = list(request = request),
-               handle = connection$handle))
-}
-
-retire_batch_ssh = function(connection, jobs){
-  # Unlike the http version, this is a crutch. I did not find an api for
-  # deleting files of a specific job, only for deleting the entire batch
-  # of jobs. So I just cancel the job when I no longer need it. TODO: Rewrite
-  # create_job_ssh so that it creates a batch of jobs rather than individual
-  # jobs
-  for(val in jobs$jobs_name){
-    ssh_exec_wait(connection$connection,
-                  paste0("cd ", connection$dir, " && " ,
-                         "./bin/cancel_jobs --name ", val))
-  }
-}
-
 #' @title update_jobs_status
 #' @description Update status for jobs and get result for complete jobs.
 #' @param connection a connection created by create_connection.
@@ -108,6 +78,8 @@ update_jobs_status = function(connection, jobs_status, callback_function = NULL)
 {
   if(jobs_status$status == "done"){
     stop("All results have already been received.")
+  } else if(jobs_status$status == "aborted"){
+    stop("All jobs have already been canceled.")
   }
   for(k in seq_len(length(jobs_status$jobs_name))){
     mess = ""
@@ -123,18 +95,9 @@ update_jobs_status = function(connection, jobs_status, callback_function = NULL)
                                 function(str){mess <<- rawToChar(str)})
     } else if (connection$type == "http"){
       # for http connections
-      # Get user auth ID
-      cook = cookies(connection$handle)
-      auth = cook[cook["name"]=="auth", "value"]
-      # Create request text
-      get_job_xml = paste0(
-        "<query_completed_job>",
-          "<authenticator>", auth, "</authenticator>",
-          "<job_name>", jobs_status$jobs_name[k], "</job_name>",
-        "</query_completed_job>")
-      response = content(POST(url = paste0(connection$url,"/submit_rpc_handler.php"),
-                              body = list(request = get_job_xml),
-                              handle = connection$handle))
+      # Get job state:
+      response = send_http_message_to_server(connection, "query_completed_job",
+                                             list(job_name = jobs_status$jobs_name[k]))
       job_status = as_list(response)$query_completed_job$completed_job
       if(is.null(job_status$exit_status)){
         # job not complete or fails
@@ -181,9 +144,19 @@ update_jobs_status = function(connection, jobs_status, callback_function = NULL)
   # File deletion from server:
   if(jobs_status$status == "done"){
     if(connection$type == "http"){
-      retire_batch_http(connection, jobs_status)
+      send_http_message_to_server(connection, "retire_batch",
+                                  list(batch_id = jobs_status$batch_id))
     }else if(connection$type == "ssh"){
-      retire_batch_ssh(connection, jobs_status)
+      # Unlike the http version, this is a crutch. I did not find an api for
+      # deleting files of a specific job, only for deleting the entire batch
+      # of jobs. So I just cancel the job when I no longer need it. TODO:
+      # Rewrite create_job_ssh so that it creates a batch of jobs rather than
+      # individual jobs.
+      for(val in jobs_status$jobs_name){
+        ssh_exec_wait(connection$connection,
+                      paste0("cd ", connection$dir, " && " ,
+                             "./bin/cancel_jobs --name ", val))
+      }
     } else{
       stop ("Unknown protocol.")
     }
