@@ -1,6 +1,6 @@
 # Original file name: "connection.R"
 # Created: 2021.02.02
-# Last modified: 2021.07.22
+# Last modified: 2021.10.22
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -14,6 +14,7 @@
 #' @importFrom httr handle
 #' @importFrom httr POST
 #' @importFrom httr GET
+#' @importFrom httr cookies
 #' @importFrom httr content_type
 #' @importFrom askpass askpass
 
@@ -38,7 +39,7 @@
 #' to NULL, then a window will be displayed prompting you to enter the password
 #' @param keyfile path to a private key file. For ssh connection only.
 #' @return a connection (list) for use by other functions.
-#'
+#' @details
 #' When errors occur, execution can be stopped with the following messages:
 #' * for any connections:
 #'   * "Unsupported server address format."
@@ -135,11 +136,20 @@ connect_ssh = function(host,
 #' @description Disconnect from the server.
 #' @param connection a connection created by create_connection
 #' @inherit create_jobs examples
+#' @details
+#' When errors occur, execution can be stopped with the following messages:
+#' * for http/https connections:
+#'   * "Already disconnected."
 close_connection = function(connection)
 {
   if(connection$type == "ssh"){
     ssh_disconnect(connection$connection)
   } else if(connection$type == "http"){
+    # Check for disconnection:
+    cook = cookies(connection$handle)
+    if(!("auth" %in% cook["name"])){
+      stop("Already disconnected.")
+    }
     # Find logout page reference
     res = GET(url = paste0(connection$url, "/home.php"),
               handle = connection$handle)

@@ -12,6 +12,15 @@ close_connection(connection)
 \description{
 Disconnect from the server.
 }
+\details{
+When errors occur, execution can be stopped with the following messages:
+\itemize{
+\item for http/https connections:
+\itemize{
+\item "Already disconnected."
+}
+}
+}
 \examples{
 \dontrun{
 # import library

@@ -37,7 +37,11 @@ to NULL, then a window will be displayed prompting you to enter the password}
 }
 \value{
 a connection (list) for use by other functions.
-
+}
+\description{
+Create an ssh or http/https connection to the BOINC server.
+}
+\details{
 When errors occur, execution can be stopped with the following messages:
 \itemize{
 \item for any connections:
@@ -56,9 +60,6 @@ When errors occur, execution can be stopped with the following messages:
 \item Other exceptions thrown by ssh_connect.
 }
 }
-}
-\description{
-Create an ssh or http/https connection to the BOINC server.
 }
 \examples{
 \dontrun{

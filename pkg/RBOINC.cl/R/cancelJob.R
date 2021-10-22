@@ -37,10 +37,18 @@ cancel_jobs = function(connection, jobs_status)
                            "./bin/cancel_jobs --name ", val))
     }
   }else if(connection$type == "http"){
-    send_http_message_to_server(connection, "abort_batch",
+    response = send_http_message_to_server(connection, "abort_batch",
                                 list(batch_id = jobs_status$batch_id))
-    send_http_message_to_server(connection, "retire_batch",
+    tmp = as_list(response)$abort_batch
+    if (exists("error", envir = as.environment(tmp))){
+      stop("BOINC server error: \"", tmp$error$error_msg[[1]], "\".")
+    }
+    response = send_http_message_to_server(connection, "retire_batch",
                                 list(batch_id = jobs_status$batch_id))
+    tmp = as_list(response)$retire_batch
+    if (exists("error", envir = as.environment(tmp))){
+      stop("BOINC server error: \"", tmp$error$error_msg[[1]], "\".")
+    }
   }else{
     stop("Unknown protocol.")
   }
