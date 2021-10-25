@@ -2,7 +2,7 @@
 <?php
 // Original file name: "get_next_number.php"
 // Created: 2021.02.08
-// Last modified: 2021.02.18
+// Last modified: 2021.10.25
 // License: BSD-3-clause
 // Written by: Astaf'ev Sergey <seryymail@mail.ru>
 // This is a part of RBOINC R package.
@@ -16,8 +16,8 @@
 // 0 - OK
 // 1 - running not in BOINC project dir
 // 2 - wrong running parameters
-// 3 - job not exist
-// 4 - file not found
+// 3 - file not found
+// 4 - job not exist
 // 5 - other errors
 // 6 - job in processing
 
@@ -39,22 +39,22 @@ $job_name =  $argv[1];
 $state = BoincWorkunit::lookup("name='$job_name'");
 
 if(!$state){
-    echo "Job not exist.";
-    exit(3);
+    echo "job_not_exist";
+    exit(4);
 }
 
 if($state->error_mask){
-    echo "error:" . $state->error_mask;
+    echo "error_code:" . $state->error_mask;
     exit(5);
 }
 
 if($state->assimilate_state == 2){
     $res_file = "download/rboinc/" . $job_name;
     if(!file_exists($res_file)){
-        echo "file not found: " . $res_file;
-        exit(4);
+        echo $res_file . " not found.";
+        exit(3);
     }
-    echo $res_file;
+    echo "done";
     exit(0);
 }
 

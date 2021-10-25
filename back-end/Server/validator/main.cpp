@@ -1,6 +1,6 @@
 // Original file name: "main.cpp"
 // Created: 2021.03.30
-// Last modified: 2021.10.22
+// Last modified: 2021.10.25
 // License: BSD-3-clause
 // Written by: Astaf'ev Sergey <seryymail@mail.ru>
 // Description: This is universal validator for any R code results.
@@ -17,33 +17,36 @@
 
 // R test script.
 const char* test_script = "Rscript -e \"\
-ret = 3 \n\
+retval = 3 \n\
 try(expr = {\n\
   file = commandArgs(trailingOnly=TRUE)[1]\n\
   test_env = new.env()\n\
   load(file, test_env)\n\
+  ret = 0\n\
   if((length(test_env) == 1) && ('result' %in% names(test_env)) && (is.list(test_env\\$result))){\n\
-    ret <<- 0\n\
     for(val in test_env\\$result){\n\
       nm = names(val)\n\
       if((length(val) != 2) || !('res' %in% nm) || !('pos' %in% nm)){\n\
-        ret <<- 1\n\
+        ret = 1\n\
         break\n\
       }\n\
     }\n\
   }else {\n\
-    ret <<- 2\n\
+    ret = 2\n\
   }\n\
+  retval <<- ret \n\
 }, silent = TRUE)\n\
-quit('no', ret)\" \0";
+quit('no', retval)\" \0";
 
 char *cmd_string;
+unsigned int script_len;
 
 int validate_handler_init(int argc, char** argv)
 {
-    unsigned long int size = PATH_MAX + strlen(test_script);
+    script_len = strlen(test_script);
+    unsigned long int size = PATH_MAX + script_len;
     cmd_string = (char*)malloc(size + 1);
-    memcpy((void*)cmd_string, (void*)test_script, strlen(test_script) + 1);
+    memcpy((void*)cmd_string, (void*)test_script, script_len + 1);
     return 0;
 }
 
@@ -67,8 +70,9 @@ int init_result(RESULT& result, void*& data)
         return ERR_FOPEN;
     }
     // Check file format:
-    memcpy((void*)(cmd_string + strlen(test_script)), (void*)filename, strlen(filename));
-    cmd_string[strlen(filename) + strlen(test_script)] = '\0';
+    unsigned int filename_len = strlen(filename);
+    memcpy((void*)(cmd_string + script_len), (void*)filename, filename_len);
+    cmd_string[filename_len + script_len] = '\0';
     return system(cmd_string);
 }
 

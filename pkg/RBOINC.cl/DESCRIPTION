@@ -1,6 +1,6 @@
 Package: RBOINC.cl
 Title: This Package Allow you to Run your Tasks at BOINC Server. Current Status: Alpha-3
-Version: 0.0.0.20211020
+Version: 0.0.0.20211025
 URL: https://r-forge.r-project.org/R/?group_id=540
 BugReports: https://r-forge.r-project.org/tracker/?group_id=540
 Authors@R: 

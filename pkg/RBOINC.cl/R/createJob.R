@@ -268,13 +268,11 @@ create_jobs = function(connection,
                     global_vars,
                     packages,
                     files)
-  status = ""
   if(connection$type == "ssh"){
     # Send archive to server
     files = stage_files_ssh(connection, ar, n)
     # Get jobs names
     jobs = register_jobs_ssh(connection, files)
-    status = "initialization"
   } else if (connection$type == "http"){
     # Send archive to server
     response = POST(url = paste0(connection$url, "/rboinc_upload_archive.php"),
@@ -287,13 +285,11 @@ create_jobs = function(connection,
     xml_data = as_list(content(response))
     # Get jobs names
     jobs = register_jobs_http(connection, xml_data)
-    status =  character(length(xml_data$data))
   }
   ret = list(batch_id = jobs$batch_id,
              jobs_name = jobs$jobs_name,
              results = vector("list", length = result_count),
-             jobs_status = status,
-             jobs_code = rep(-1, length(jobs)),
+             jobs_status = rep("initialization", length(jobs$jobs_name)),
              status = "initialization")
   return(ret)
 }
