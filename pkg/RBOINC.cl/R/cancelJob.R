@@ -14,15 +14,51 @@
 
 #' @title cancel_jobs
 #' @description Cancel running jobs.
-#' @param connection a connection created by create_connection.
-#' @param jobs_status a list returned by create_jobs or update_jobs_status.
+#' @param connection a connection created by
+#' \link[=create_connection]{create_connection}
+#' @param jobs_status a list returned by \link[=create_jobs]{create_jobs} or
+#' \link[=update_jobs_status]{update_jobs_status}
 #' @inherit create_jobs return
 #' @details
+#' This function cancels the specified jobs on the server. Status field in the
+#' return value is set to "aborted".
+#'
+#'## Errors and warnings
 #' When errors occur, execution can be stopped with the following messages:
 #' * for unknown connections:
 #'   * "Unknown protocol."
+#' * for http/https connections:
+#'   * "BOINC server error: "\code{<}error message\code{>}""
 #' * for any connection:
 #'   * "All results have already been received."
+#'   * "All jobs have already been canceled."
+#' @examples
+#' \dontrun{
+#'
+#' # Function for data processing:
+#' fun = function(val)
+#' {
+#'    ...
+#' }
+#'
+#' # Data for processing:
+#' data = list(...)
+#'
+#' # Connection to the BOINC server:
+#' con = create_connection(...)
+#'
+#' # Send jobs to BOINC server:
+#' jobs = create_jobs(con, fun, data)
+#'
+#' # Cancel jobs:
+#' jobs = cancel_jobs(con, jobs)
+#'
+#' # Stopped with error:
+#' jobs = update_jobs_status(con, jobs)
+#'
+#' # Release resources:
+#' close_connection(con)
+#' }
 cancel_jobs = function(connection, jobs_status)
 {
   if(jobs_status$status == "done"){

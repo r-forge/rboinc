@@ -179,20 +179,29 @@ update_jobs_status_http = function(connection, jobs_status, callback_function)
 
 #' @title update_jobs_status
 #' @description Update status for jobs and get result for complete jobs.
-#' @param connection a connection created by create_connection.
-#' @param jobs_status a list returned by create_jobs or update_jobs_status.
-#' @param callback_function a function that is called for each result after
-#' loading. This function must take one argument, which is the result of the
-#' work performed. The value returned by this function is placed in the result
-#' list.
+#' @param connection a connection created by
+#' \link[=create_connection]{create_connection}
+#' @param jobs_status a list returned by
+#' \link[=create_jobs]{create_jobs} or update_jobs_status.
+#' @param callback_function a function with prototype
+#' \code{function(result_element)} that is called for each result after loading.
+#' The value returned by this function is placed in the result list.
 #' @inherit create_jobs return
 #' @details
+#' This function communicates with the boinc server and gets the state for each
+#' job. If the job has already been completed, and its result has been
+#' downloaded and processed, then it is skipped. After the last result is
+#' downloaded, the jobs data is deleted from the server, and status field in the
+#' return value is set to "done".
+#'
+#' ## Errors and warnings
 #' When errors occur, execution can be stopped with the following messages:
 #' * for unknown connections:
 #'   * "Unknown protocol."
 #' * for any connection:
-#'   * "The number of tasks must be greater than 0."
+#'   * "All jobs have already been canceled."
 #'   * "All results have already been received."
+#'
 #' This function can output the following warnings:
 #' * for any connection:
 #'   * Failed to download the result: "\code{<}error message\code{>}"

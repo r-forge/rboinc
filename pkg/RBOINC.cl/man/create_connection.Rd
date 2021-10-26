@@ -13,7 +13,7 @@ create_connection(
 )
 }
 \arguments{
-\item{server}{an ssh or http server URL of the form
+\item{server}{a ssh or http server URL of the form
 \code{<}protocol\code{>}://\code{<}server name\code{>}:\code{<}port\code{>}.
 Examples:
 \itemize{
@@ -36,12 +36,26 @@ to NULL, then a window will be displayed prompting you to enter the password}
 \item{keyfile}{path to a private key file. For ssh connection only.}
 }
 \value{
-a connection (list) for use by other functions.
+A connection (list) for use by other functions.
 }
 \description{
-Create an ssh or http/https connection to the BOINC server.
+Create a connection to the BOINC server.
 }
 \details{
+This function create a connection to BOINC server. Don't edit the list
+returned by this function.
+
+Returned object contains valid information only until the end of the current
+R session, so don't save it to a file. Before ending the session, it is
+recommended to release the occupied resources by calling
+\code{\link[=close_connection]{close_connection()}}.
+
+\strong{ATTENTION:} ssh connections are supported but not recommended. If you
+are the administrator for your BOINC project, see
+https://boinc.berkeley.edu/trac/wiki/MultiUser for more information on the
+http BOINC multiuser interface.
+\subsection{Errors and warnings}{
+
 When errors occur, execution can be stopped with the following messages:
 \itemize{
 \item for any connections:
@@ -57,56 +71,33 @@ When errors occur, execution can be stopped with the following messages:
 \item for ssh connections:
 \itemize{
 \item "Project directory was not found on server."
-\item Other exceptions thrown by ssh_connect.
+}
 }
 }
 }
 \examples{
 \dontrun{
-# import library
-library(RBOINC.cl)
-# function for data processing
-fun = function(val)
-{
-  return(val * a + b)
-}
-# global variables
-glob_vars = list(a = 3, b = 2)
-# Initialization function. This function runs on each node for one times.
-init = function()
-{
-  return(NULL)
-}
-# data for processing
-data = list(matrix(rexp(15), 3,5), matrix(rexp(15), 3,5))
 
-#callback function
-print_func = function(val)
-{
-  print(val)
-  # May be any value
-  return(val)
-  #return(NULL)
-}
+# For ssh connection:
+con = create_connection(server = "ssh://boinc.local",
+                        dir = "~/projects/myproject",
+                        username = "boincadm",
+                        password = "0000")
 
-# Test jobs before sending
-jobs_t = test_jobs(fun, data, init_func = init, global_vars = glob_vars, callback_function = print_func)
-jobs_t
-jobs_t = test_jobs(fun, data, 1, init, glob_vars, callback_function = print_func)
-jobs_t
+# For http connections:
+con = create_connection(server = "http://boinc.local",
+                        dir = "myproject",
+                        username = "submitter@example.com",
+                        password = "000000")
 
-# Create connection:
-#con = create_connection("ssh://boinc.local", "~/projects/myproject", "boincadm", "0000") # ssh
-#con = create_connection("http://boinc.local", "myproject", "submitter@example.com","000000")# http
-con
-# send jobs:
-#jobs = create_jobs(con, fun, data, init_func = init, global_vars = glob_vars)
-#jobs = create_jobs(con, fun, data, 1, init, glob_vars)
-jobs
-# Get jobs status. Run this until status not equal "done":
-jobs = update_jobs_status(con, jobs)
-jobs
-# Close connection:
+# For https connections:
+con = create_connection(server = "https://boinc.local",
+                        dir = "myproject",
+                        username = "submitter@example.com",
+                        password = "000000")
+...
+
+# Release resources:
 close_connection(con)
 }
 }

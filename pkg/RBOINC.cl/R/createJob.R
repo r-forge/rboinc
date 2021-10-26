@@ -147,20 +147,19 @@ split_list = function(data, n)
 }
 
 #' @title create_jobs
-#' @description This function automatically breaks the data into n parts and
-#' creates n jobs.
-#' @param connection a connection created by create_connection.
-#' @param work_func data processing function. This function runs for each
-#' element in data. This function can be recursive.
+#' @description Creates a jobs on BOINC server.
+#' @param connection a connection returned by
+#' \link[=create_connection]{create_connection}.
+#' @param work_func data processing function with prototype
+#' \code{function(data_element)}. This function runs for each element in data.
+#' This function can be recursive.
 #' @param data data for processing.  Must be a numerable list or vector.
 #' @param n a number of jobs. This parameter must be less than or equal to the
 #' length of the data. If not specified, then the number of jobs will be equal
 #' to the length of the data.
-#' @param init_func initialization function. This function runs once at the
-#' start of a job before the job is split into separate threads. Necessary for
-#' additional initialization, for example, for compiling C++ functions from
-#' sources transferred through files parameter. This function can not to be
-#' recursive.
+#' @param init_func initialization function with prototype \code{function()}.
+#' This function runs once at the start of a job before the job is split into
+#' separate threads. This function can not to be recursive.
 #' @param global_vars a list in the format
 #' \code{<}variable name\code{>}=\code{<}value\code{>}.
 #' @param packages a string vector with imported packages names.
@@ -168,19 +167,41 @@ split_list = function(data, n)
 #' for jobs.
 #' @return a list with current states of jobs. This list contains the following
 #' fields:
-#' * jobs_name - a name of job on BOINC server;
-#' * results - computation results (NULL if computation is still incomplete).
+#' * batch_id - ID of the batch that includes the jobs;
+#' * jobs_name - a name of jobs on BOINC server;
+#' * results - computation results (NULL if computation is still incomplete);
 #' The length of this list is equal to the length of the data;
-#' * jobs_status - jobs human-readable status for each job;
-#' * jobs_code - jobs status code, don't use this field;
+#' * jobs_status - human-readable status for each job;
 #' * status - computation status, may be:
 #'   * "initialization" - jobs have been submitted to the server, but their
-#'   status was not requested by update_jobs_status.
-#'   * "in_progress" - BOINC serves jobs.
-#'   * "done" - computations are complete, the result was downloaded.
-#'   * "error" - an error occurred during the job processing.
-#'   * "queued" - job in the queue (only for http/https connections).
+#'   status was not requested by update_jobs_status;
+#'   * "in_progress" - BOINC serves jobs;
+#'   * "done" - computations are complete, the result was downloaded;
+#'   * "warning" a recoverable error occurred during the job processing;
+#'   * "error" - a serious error occurred during the job processing;
+#'   * "aborted" - processing was canceled using the
+#'   \link[=cancel_jobs]{cancel_jobs} function.
 #' @details
+#' This function automatically breaks the data into n parts and creates n jobs.
+#' The number of jobs must be greater than zero.
+#'
+#' Parameter init_func is necessary for additional initialization, for example,
+#' for compiling C++ functions from sources transferred through files parameter.
+#'
+#' The job is performed as follows:
+#' 1. The necessary \code{packages} are first loaded/installed;
+#' 1. The \code{RBOINC_work_func} and \code{RBOINC_init_func} functions are
+#' loaded which are renamed \code{work_func} and \code{init_func};
+#' 1. The \code{RBOINC_data} object is loaded which is renamed part of
+#' \code{data};
+#' 1. The working folder changes to the one where the \code{files} were copied;
+#' 1. The \link[doMC:registerDoMC]{registerDoMC(NULL)} function is called;
+#' 1. The original name of the \code{RBOINC_work_func} function is restored;
+#' 1. \code{global_vars} are copied to the global environment;
+#' 1. The \code{RBOINC_init_func()} function is called;
+#' 1. The job is divided into sub-tasks and is performed in parallel.
+#'
+#' ## Errors and warnings
 #' When errors occur, execution can be stopped with the following messages:
 #' * for http connections:
 #'   * "You can not create jobs."
@@ -194,50 +215,26 @@ split_list = function(data, n)
 #'
 #' @examples
 #' \dontrun{
-#' # import library
-#' library(RBOINC.cl)
-#' # function for data processing
+#'
+#' # Function for data processing:
 #' fun = function(val)
 #' {
-#'   return(val * a + b)
-#' }
-#' # global variables
-#' glob_vars = list(a = 3, b = 2)
-#' # Initialization function. This function runs on each node for one times.
-#' init = function()
-#' {
-#'   return(NULL)
-#' }
-#' # data for processing
-#' data = list(matrix(rexp(15), 3,5), matrix(rexp(15), 3,5))
-#'
-#' #callback function
-#' print_func = function(val)
-#' {
-#'   print(val)
-#'   # May be any value
-#'   return(val)
-#'   #return(NULL)
+#'    ...
 #' }
 #'
-#' # Test jobs before sending
-#' jobs_t = test_jobs(fun, data, init_func = init, global_vars = glob_vars, callback_function = print_func)
-#' jobs_t
-#' jobs_t = test_jobs(fun, data, 1, init, glob_vars, callback_function = print_func)
-#' jobs_t
+#' # Data for processing:
+#' data = list(...)
 #'
-#' # Create connection:
-#' #con = create_connection("ssh://boinc.local", "~/projects/myproject", "boincadm", "0000") # ssh
-#' #con = create_connection("http://boinc.local", "myproject", "submitter@example.com","000000")# http
-#' con
-#' # send jobs:
-#' #jobs = create_jobs(con, fun, data, init_func = init, global_vars = glob_vars)
-#' #jobs = create_jobs(con, fun, data, 1, init, glob_vars)
-#' jobs
-#' # Get jobs status. Run this until status not equal "done":
+#' # Connection to the BOINC server:
+#' con = create_connection(...)
+#'
+#' # Send jobs to BOINC server:
+#' jobs = create_jobs(con, fun, data)
+#'
+#' # Get status for jobs:
 #' jobs = update_jobs_status(con, jobs)
-#' jobs
-#' # Close connection:
+#'
+#' # Release resources:
 #' close_connection(con)
 #' }
 create_jobs = function(connection,

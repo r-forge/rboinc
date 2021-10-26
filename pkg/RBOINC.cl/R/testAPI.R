@@ -19,20 +19,38 @@
 #' @export test_jobs
 
 #' @title test_jobs
-#' @description Like create_n_jobs, it creates a jobs for the BOINC server but
-#' does not submit them. Instead, it runs all jobs locally and generates a
-#' report at each step. This function is intended for debugging applications
-#' that use RBOINC. Files created by this function are not deleted after its
-#' completion.
+#' @description performing jobs locally.
 #' @inherit create_jobs params
 #' @inherit update_jobs_status params
 #' @return a list with states of jobs. This list contains the following fields:
 #' * log - Rscript output;
 #' * result - computation result.
+#' @details
+#' Like \link[=create_jobs]{create_jobs}, it creates a jobs for the BOINC server
+#' but does not submit them. Instead, it runs all jobs locally and generates a
+#' report at each step. This function is intended for debugging applications
+#' that use RBOINC. Files created by this function are not deleted after its
+#' completion.
+#'
+#'## Errors and warnings
 #' When errors occur, execution can be stopped with the following messages:
-#' * for any connection:
-#'   * "Archive making error: \code{<}error message\code{>}"
-#' @inherit create_jobs examples
+#' * "Archive making error: \code{<}error message\code{>}"
+#' @examples
+#' \dontrun{
+#'
+#' # Function for data processing:
+#' fun = function(val)
+#' {
+#'    ...
+#' }
+#'
+#' # Data for processing:
+#' data = list(...)
+#'
+#' # Test jobs locally:
+#' res = test_jobs(fun, data)
+#'
+#' }
 test_jobs = function(work_func,
                        data,
                        n = NULL,
@@ -72,8 +90,8 @@ test_jobs = function(work_func,
     return(NULL)
   }
 
-  # Workaround for bsdtar 3.3.2 bug. For some tar.xz arhives bsdtar 3.3.2
-  # freezes when unpacking.
+  # Workaround for bsdtar 3.3.2 bug.
+  # For some tar.xz arhives bsdtar 3.3.2 freezes when unpacking.
   tar_version = tryCatch({
     untar("", extras = "--version", list = TRUE)
   },error=function(cond){

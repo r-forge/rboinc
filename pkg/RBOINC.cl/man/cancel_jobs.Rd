@@ -7,27 +7,31 @@
 cancel_jobs(connection, jobs_status)
 }
 \arguments{
-\item{connection}{a connection created by create_connection.}
+\item{connection}{a connection created by
+\link[=create_connection]{create_connection}}
 
-\item{jobs_status}{a list returned by create_jobs or update_jobs_status.}
+\item{jobs_status}{a list returned by \link[=create_jobs]{create_jobs} or
+\link[=update_jobs_status]{update_jobs_status}}
 }
 \value{
 a list with current states of jobs. This list contains the following
 fields:
 \itemize{
-\item jobs_name - a name of job on BOINC server;
-\item results - computation results (NULL if computation is still incomplete).
+\item batch_id - ID of the batch that includes the jobs;
+\item jobs_name - a name of jobs on BOINC server;
+\item results - computation results (NULL if computation is still incomplete);
 The length of this list is equal to the length of the data;
-\item jobs_status - jobs human-readable status for each job;
-\item jobs_code - jobs status code, don't use this field;
+\item jobs_status - human-readable status for each job;
 \item status - computation status, may be:
 \itemize{
 \item "initialization" - jobs have been submitted to the server, but their
-status was not requested by update_jobs_status.
-\item "in_progress" - BOINC serves jobs.
-\item "done" - computations are complete, the result was downloaded.
-\item "error" - an error occurred during the job processing.
-\item "queued" - job in the queue (only for http/https connections).
+status was not requested by update_jobs_status;
+\item "in_progress" - BOINC serves jobs;
+\item "done" - computations are complete, the result was downloaded;
+\item "warning" a recoverable error occurred during the job processing;
+\item "error" - a serious error occurred during the job processing;
+\item "aborted" - processing was canceled using the
+\link[=cancel_jobs]{cancel_jobs} function.
 }
 }
 }
@@ -35,15 +39,53 @@ status was not requested by update_jobs_status.
 Cancel running jobs.
 }
 \details{
+This function cancels the specified jobs on the server. Status field in the
+return value is set to "aborted".
+\subsection{Errors and warnings}{
+
 When errors occur, execution can be stopped with the following messages:
 \itemize{
 \item for unknown connections:
 \itemize{
 \item "Unknown protocol."
 }
+\item for http/https connections:
+\itemize{
+\item "BOINC server error: "\code{<}error message\code{>}""
+}
 \item for any connection:
 \itemize{
 \item "All results have already been received."
+\item "All jobs have already been canceled."
 }
+}
+}
+}
+\examples{
+\dontrun{
+
+# Function for data processing:
+fun = function(val)
+{
+   ...
+}
+
+# Data for processing:
+data = list(...)
+
+# Connection to the BOINC server:
+con = create_connection(...)
+
+# Send jobs to BOINC server:
+jobs = create_jobs(con, fun, data)
+
+# Cancel jobs:
+jobs = cancel_jobs(con, jobs)
+
+# Stopped with error:
+jobs = update_jobs_status(con, jobs)
+
+# Release resources:
+close_connection(con)
 }
 }

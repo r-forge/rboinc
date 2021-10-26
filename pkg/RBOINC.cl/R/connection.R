@@ -22,8 +22,8 @@
 #' @export close_connection
 
 #' @title create_connection
-#' @description Create an ssh or http/https connection to the BOINC server.
-#' @param server an ssh or http server URL of the form
+#' @description Create a connection to the BOINC server.
+#' @param server a ssh or http server URL of the form
 #' \code{<}protocol\code{>}://\code{<}server name\code{>}:\code{<}port\code{>}.
 #' Examples:
 #' * "ssh://boinc-server.local" - for ssh connection;
@@ -38,8 +38,21 @@
 #' @param password a string containing user password. If this parameter is equal
 #' to NULL, then a window will be displayed prompting you to enter the password
 #' @param keyfile path to a private key file. For ssh connection only.
-#' @return a connection (list) for use by other functions.
+#' @return A connection (list) for use by other functions.
 #' @details
+#' This function create a connection to BOINC server. Don't edit the list
+#' returned by this function.
+#'
+#' Returned object contains valid information only until the end of the current
+#' R session, so don't save it to a file. Before ending the session, it is
+#' recommended to release the occupied resources by calling
+#' \code{\link[=close_connection]{close_connection()}}.
+#'
+#' \strong{ATTENTION:} ssh connections are supported but not recommended. If you
+#' are the administrator for your BOINC project, see
+#' https://boinc.berkeley.edu/trac/wiki/MultiUser for more information on the
+#' http BOINC multiuser interface.
+#' ## Errors and warnings
 #' When errors occur, execution can be stopped with the following messages:
 #' * for any connections:
 #'   * "Unsupported server address format."
@@ -49,8 +62,31 @@
 #'   * "Authorization failed."
 #' * for ssh connections:
 #'   * "Project directory was not found on server."
-#'   * Other exceptions thrown by ssh_connect.
-#' @inherit create_jobs examples
+#' @examples
+#' \dontrun{
+#'
+#' # For ssh connection:
+#' con = create_connection(server = "ssh://boinc.local",
+#'                         dir = "~/projects/myproject",
+#'                         username = "boincadm",
+#'                         password = "0000")
+#'
+#' # For http connections:
+#' con = create_connection(server = "http://boinc.local",
+#'                         dir = "myproject",
+#'                         username = "submitter@example.com",
+#'                         password = "000000")
+#'
+#' # For https connections:
+#' con = create_connection(server = "https://boinc.local",
+#'                         dir = "myproject",
+#'                         username = "submitter@example.com",
+#'                         password = "000000")
+#' ...
+#'
+#' # Release resources:
+#' close_connection(con)
+#' }
 create_connection = function(server,
                              dir = "~/projects/rboinc",
                              username,
@@ -134,12 +170,20 @@ connect_ssh = function(host,
 
 #' @title close_connection
 #' @description Disconnect from the server.
-#' @param connection a connection created by create_connection
-#' @inherit create_jobs examples
+#' @param connection a connection created by
+#' \code{\link[=create_connection]{create_connection()}}.
+#' @return NULL
 #' @details
+#' This function closes the connection to the BOINC server and frees up busy
+#' resources. In the case of ssh, it just calls the
+#' \code{\link[ssh:ssh_disconnect]{ssh_disconnect()}} function from the ssh
+#' package. In the case of the http/https interface, it looks for a link to the
+#' exit page on the home page and follows it.
+#' ## Errors and warnings
 #' When errors occur, execution can be stopped with the following messages:
 #' * for http/https connections:
 #'   * "Already disconnected."
+#' @inherit create_connection examples
 close_connection = function(connection)
 {
   if(connection$type == "ssh"){
@@ -160,4 +204,5 @@ close_connection = function(connection)
     url = gsub("&amp;", "&", url)
     res = GET(url, handle = connection$handle)
   }
+  return(NULL)
 }

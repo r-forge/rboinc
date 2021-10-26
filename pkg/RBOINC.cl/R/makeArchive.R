@@ -1,6 +1,6 @@
 # Original file name: "makeArchive.R"
 # Created: 2021.02.03
-# Last modified: 2021.07.19
+# Last modified: 2021.10.26
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -38,7 +38,8 @@ generate_r_script = function(original_work_func_name, init, glob_vars, packages)
     str = paste0(str, paste(packages, collapse = "\", \""))
     str = paste0(str, "\")")
   }
-  str = paste0(str, ", .export = c(\"RBOINC_work_func\"")
+  str = paste0(str, ", .export = c(\"RBOINC_work_func\"",
+               ", \"", original_work_func_name,"\"")
   if(!is.null(glob_vars)){
     str = paste0(str, ", \"RBOINC_global_vars\"")
   }
