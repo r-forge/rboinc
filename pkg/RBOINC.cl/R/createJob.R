@@ -195,11 +195,15 @@ split_list = function(data, n)
 #' 1. The \code{RBOINC_data} object is loaded which is renamed part of
 #' \code{data};
 #' 1. The working folder changes to the one where the \code{files} were copied;
-#' 1. The \link[doMC:registerDoMC]{registerDoMC(NULL)} function is called;
+#' 1. According to the number of detected cores, a cluster is created with the
+#' name "RBOINC_cluster"
+#' 1. The \link[doParallel:registerDoParallel]{registerDoParallel(RBOINC_cluster)}
+#' function is called;
 #' 1. The original name of the \code{RBOINC_work_func} function is restored;
 #' 1. \code{global_vars} are copied to the global environment;
 #' 1. The \code{RBOINC_init_func()} function is called;
 #' 1. The job is divided into sub-tasks and is performed in parallel.
+#' 1. Execution results are collected together and sent to the BOINC server.
 #'
 #' ## Errors and warnings
 #' When errors occur, execution can be stopped with the following messages:

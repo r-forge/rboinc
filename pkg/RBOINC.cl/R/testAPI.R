@@ -11,10 +11,13 @@
 #' @importFrom R.utils printf
 #' @importFrom utils untar
 
-# The next line was added only to add foreach to the list of dependencies.
+# The next lines was added only to add foreach to the list of dependencies.
 # foreach is used by the generated script and therefore is required by the
 # functions from the testAPI.R
 #' @importFrom foreach foreach
+#' @importFrom doParallel registerDoParallel
+#' @importFrom parallel makeCluster
+#' @importFrom parallel detectCores
 
 #' @export test_jobs
 

@@ -1,6 +1,6 @@
 # Original file name: "makeArchive.R"
 # Created: 2021.02.03
-# Last modified: 2021.10.26
+# Last modified: 2021.11.22
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -16,7 +16,7 @@ generate_r_script = function(original_work_func_name, init, glob_vars, packages)
   # cannot provide multiprocessing under Windows. Instead, the code using doMC
   # will be executed in one thread. This script tries to install it because
   # testAPI.R needs this package.
-  str = "if(!require(doMC)){\n install.packages(\"doMC\", repos = c('http://rforge.net', 'http://cran.rstudio.org'))\n  library(doMC)\n}\nlibrary(foreach)\n"
+  str = "library(doParallel)\nlibrary(foreach)\nlibrary(parallel)\n"
   for(val in packages){
     str = paste0(str, "if(!require(", val, ")){\n\tinstall.packages(\"", val, "\", repos = c('http://rforge.net', 'http://cran.rstudio.org'))\n",
                  "  library(", val, ")\n}\n")
@@ -24,7 +24,8 @@ generate_r_script = function(original_work_func_name, init, glob_vars, packages)
   str = paste0(str, "load(\"code.rda\")\n")
   str = paste0(str, "load(\"data.rda\")\n")
   str = paste0(str, "setwd(\"./files/\")\n")
-  str = paste0(str, "registerDoMC(NULL)\n")
+  str = paste0(str, "RBOINC_cluster = makeCluster(detectCores())\n")
+  str = paste0(str, "registerDoParallel(RBOINC_cluster)\n")
   str = paste0(str, original_work_func_name, " = RBOINC_work_func\n")
   if(!is.null(glob_vars)){
     str = paste0(str, "list2env(RBOINC_global_vars, .GlobalEnv)\n")
@@ -51,6 +52,7 @@ generate_r_script = function(original_work_func_name, init, glob_vars, packages)
   str = paste0(str, "}\n")
   str = paste0(str, "setwd(\"../../shared/\")\n")
   str = paste0(str, "save(result, file = \"result.rda\", compress = \"xz\", compression_level = 9)\n")
+  str = paste0(str, "stopCluster(RBOINC_cluster)\n")
   return(str)
 }
 

@@ -81,11 +81,15 @@ loaded which are renamed \code{work_func} and \code{init_func};
 \item The \code{RBOINC_data} object is loaded which is renamed part of
 \code{data};
 \item The working folder changes to the one where the \code{files} were copied;
-\item The \link[doMC:registerDoMC]{registerDoMC(NULL)} function is called;
+\item According to the number of detected cores, a cluster is created with the
+name "RBOINC_cluster"
+\item The \link[doParallel:registerDoParallel]{registerDoParallel(RBOINC_cluster)}
+function is called;
 \item The original name of the \code{RBOINC_work_func} function is restored;
 \item \code{global_vars} are copied to the global environment;
 \item The \code{RBOINC_init_func()} function is called;
 \item The job is divided into sub-tasks and is performed in parallel.
+\item Execution results are collected together and sent to the BOINC server.
 }
 \subsection{Errors and warnings}{
 
