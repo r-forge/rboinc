@@ -1,11 +1,11 @@
 Package: RBOINC.cl
 Title: This Package Allow you to Run your Tasks at BOINC Server. Current Status: Beta
-Version: 0.9.1.147
+Version: 0.9.1.149
 URL: https://r-forge.r-project.org/R/?group_id=540
 BugReports: https://r-forge.r-project.org/tracker/?group_id=540
 Authors@R: 
     c(person(given = "Sergey",
-           family = "Astaf'ev",
+           family = "Astaf`ev",
            role = c("aut", "cre"),
            email = "seryymail@mail.ru",
            comment = c(ORCID = "https://orcid.org/0000-0002-4486-798X")),
