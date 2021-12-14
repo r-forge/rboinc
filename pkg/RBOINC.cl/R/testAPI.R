@@ -1,6 +1,6 @@
 # Original file name: "testAPI.R"
 # Created: 2021.03.19
-# Last modified: 2021.08.25
+# Last modified: 2021.12.14
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -9,7 +9,6 @@
 # All rights reserved
 
 #' @importFrom R.utils printf
-#' @importFrom utils untar
 
 # The next lines was added only to add foreach to the list of dependencies.
 # foreach is used by the generated script and therefore is required by the
@@ -85,7 +84,7 @@ test_jobs = function(work_func,
   }
   printf("Creating tmp dir for test...\t")
   tmpdir = tempfile()
-  dir.create(tmpdir)
+  dir.create(tmpdir, FALSE)
   if(dir.exists(tmpdir)){
     printf("OK: %s\n",tmpdir)
   }else {
@@ -93,34 +92,9 @@ test_jobs = function(work_func,
     return(NULL)
   }
 
-  # Workaround for bsdtar 3.3.2 bug.
-  # For some tar.xz arhives bsdtar 3.3.2 freezes when unpacking.
-  tar_version = tryCatch({
-    untar("", extras = "--version", list = TRUE)
-  },error=function(cond){
-    return("unknown_version")
-  }
-  )
-  tar_version = substr(tar_version, 1, 12)[1]
-  if(tar_version == "bsdtar 3.3.2"){
-    printf("!!!Warning: bsdtar 3.3.2 detected!!! Installing workaround...\t")
-    decompress = function(file, exdir){
-      file.copy(file, exdir)
-      bname = basename(file)
-      ret = system(paste0("xz -d -qq ", exdir, "/", bname))
-      if(ret != 0){
-        return(ret)
-      }
-      ret = system(paste0("tar -xf ", exdir, "/", substr(bname, 1, nchar(bname) - 3), " -C ", exdir))
-      return (ret)
-    }
-    printf("OK.\n")
-  } else{
-    decompress = untar
-  }
 
   printf("Testing archive unpacking...\t")
-  if(decompress(ar, exdir = tmpdir) == 0){
+  if(virtual_decompress(ar, tmpdir) == 0){
     printf("OK: founded files:\n")
     for(val in list.files(tmpdir, full.names = TRUE, recursive = TRUE)){
       printf("\t%s\n", val)
@@ -139,14 +113,14 @@ test_jobs = function(work_func,
   }
   result = vector("list", length(data))
   job_dir = tempfile()
-  dir.create(job_dir)
+  dir.create(job_dir, FALSE)
   dir.create(paste0(job_dir, "/shared"))
   for(val in jobs){
     t = paste0(job_dir, "/", basename(val))
     printf("Running job %s in %s ", val, t)
-    dir.create(t)
+    dir.create(t, FALSE)
     file.copy(paste0(tmpdir, "/data/", val), paste0(t, "/data.rda"))
-    decompress(paste0(tmpdir, "/common.tar.xz"), exdir = t)
+    virtual_decompress(paste0(tmpdir, "/common.tar.xz"), t)
     dir.create(paste0(t, "/files"), FALSE)
     setwd(t)
     tryCatch({

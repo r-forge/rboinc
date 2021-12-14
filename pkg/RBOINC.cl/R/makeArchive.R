@@ -1,6 +1,6 @@
 # Original file name: "makeArchive.R"
 # Created: 2021.02.03
-# Last modified: 2021.12.09
+# Last modified: 2021.12.14
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -8,7 +8,6 @@
 # Institute of Applied Mathematical Research
 # All rights reserved
 
-#' @importFrom utils tar
 
 generate_r_script = function(original_work_func_name, init, glob_vars, packages)
 {
@@ -126,8 +125,8 @@ make_archive = function(RBOINC_work_func,
   on.exit(setwd(old_wd), TRUE)
   setwd(tmp_dir)
   tryCatch({
-    tar(paste0(tmp_dir, "/common.tar.xz"),c("code.rda", "code.R", "files"), compression="xz")
-    tar(archive_path, c("common.tar.xz", "data"), compression="xz")
+    virtual_compress(paste0(tmp_dir, "/common.tar.xz"),c("code.rda", "code.R", "files"))
+    virtual_compress(archive_path, c("common.tar.xz", "data"))
   }, error = function(mess){
     stop(paste0("Archive making error: \"", mess, "\""))
   }

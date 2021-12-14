@@ -91,3 +91,4 @@ cancel_jobs = function(connection, jobs_status)
   jobs_status$status = "aborted"
   return(jobs_status)
 }
+
