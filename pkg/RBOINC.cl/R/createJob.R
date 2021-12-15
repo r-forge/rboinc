@@ -13,11 +13,20 @@
 #' @importFrom httr upload_file
 #' @importFrom httr content
 #' @importFrom httr cookies
+#' @importFrom httr set_cookies
 #' @importFrom xml2 as_list
 #' @importFrom xml2 xml_find_all
 #' @importFrom stats runif
+#' @importFrom stats setNames
 
 #' @export create_jobs
+
+obtain_cookies = function(connection)
+{
+  cook = cookies(connection$handle)
+  ret = setNames(as.character(cook$value), as.character(cook$name))
+  return(ret)
+}
 
 create_job_xml = function(auth, files)
 {
@@ -60,7 +69,8 @@ register_jobs_http = function(connection, xml_data)
   request = create_job_xml(auth, xml_data$staged_files)
   batch = content(POST(url = paste0(connection$url,"/submit_rpc_handler.php"),
                        body = list(request = request),
-                       handle = connection$handle))
+                       handle = connection$handle,
+                       set_cookies(obtain_cookies(connection))))
   # test for user privilegies
   tmp = as_list(batch)$submit_batch
   if (exists("error", envir = as.environment(tmp))){
@@ -75,7 +85,8 @@ register_jobs_http = function(connection, xml_data)
     "</query_batch>")
   jobs = content(POST(url = paste0(connection$url,"/submit_rpc_handler.php"),
                       body = list(request = query_xml),
-                      handle = connection$handle))
+                      handle = connection$handle,
+                      set_cookies(obtain_cookies(connection))))
   jobs = xml_find_all(jobs, "job")
   # make returned list
   jobs_name = character(length(jobs))
@@ -279,7 +290,8 @@ create_jobs = function(connection,
     response = POST(url = paste0(connection$url, "/rboinc_upload_archive.php"),
                     body = list(archive = upload_file(ar)),
                     config = content_type("multipart/form-data"),
-                    handle = connection$handle)
+                    handle = connection$handle,
+                    set_cookies(obtain_cookies(connection)))
     if(response$status_code == 403){
       stop("You can not create jobs.")
     }

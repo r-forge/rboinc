@@ -65,21 +65,21 @@ get_compression_mode = function(tar_version = "")
 .onLoad <- function(libname, pkgname) {
   # Workaround for bug #6752:
   if((Sys.getenv("tar") == "") && (version$major < 4)){
-    print("Sys.getenv did not find tar and R version < 4.0. Trying to install workaround for compression...")
+    packageStartupMessage("Sys.getenv did not find tar and R version < 4.0. Trying to install workaround for compression...")
     tar_version = tryCatch(
       system("tar --version", intern = TRUE )[1],
       error = function(mess){
         return("not_found")
       })
     if(tar_version == "not_found"){
-      print("FAIL: tar not found in your system. Using default R implementation. Please, install tar and xz.")
+      packageStartupMessage("FAIL: tar not found in your system. Using default R implementation. Please, install tar and xz.")
     }else{
-      print(paste0("Detected: ", tar_version, " Checking how tar works..."))
+      packageStartupMessage(paste0("Detected: ", tar_version, " Checking how tar works..."))
       if (get_compression_mode()){
         pkg.env$is_default_compress_implementation = FALSE
-        print("SUCCESS: workaround for compression installed.")
+        packageStartupMessage("SUCCESS: workaround for compression installed.")
       } else {
-        print("FAIL: xz algorithms is not supported by your tar. Please, install tar and xz.")
+        packageStartupMessage("FAIL: xz algorithms is not supported by your tar. Please, install tar and xz.")
       }
     }
   }
@@ -92,15 +92,15 @@ get_compression_mode = function(tar_version = "")
   })
   tar_version = substr(tar_version, 1, 11)[1]
   if(tar_version == "bsdtar 3.3."){
-    print("bsdtar 3.3.x detected. Trying to install workaround for decompression...")
+    packageStartupMessage("bsdtar 3.3.x detected. Trying to install workaround for decompression...")
     default_warn = getOption("warn")
     options(warn = -1)
     if((system("tar --version", ignore.stdout = TRUE, ignore.stderr = TRUE) == 0) && 
        (system("xz --version", ignore.stdout = TRUE, ignore.stderr = TRUE) == 0)){
       pkg.env$is_default_decompress_implementation = FALSE
-      print("SUCCESS: workaround for decompression installed.")
+      packageStartupMessage("SUCCESS: workaround for decompression installed.")
     }else{
-      print("FAIL: Please, install tar and xz.")
+      packageStartupMessage("FAIL: Please, install tar and xz.")
     }
     options(warn = default_warn)
   }

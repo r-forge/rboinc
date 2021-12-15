@@ -66,7 +66,7 @@ make_dirs = function()
 {
   tmp_dir = tempdir()
   tmp_dir = paste0(tmp_dir, "/rboinc-work")
-  dir.create(tmp_dir)
+  dir.create(tmp_dir, FALSE)
   dir.create(paste0(tmp_dir, "/files"))
   dir.create(paste0(tmp_dir, "/data"))
   return(tmp_dir)

@@ -1,6 +1,6 @@
 # Original file name: "httpSender.R"
 # Created: 2021.10.20
-# Last modified: 2021.10.20
+# Last modified: 2021.12.15
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -32,6 +32,7 @@ send_http_message_to_server = function(connection, type, params)
   # Send message:
   ret = content(POST(url = paste0(connection$url,"/submit_rpc_handler.php"),
                      body = list(request = message_xml),
-                     handle = connection$handle))
+                     handle = connection$handle,
+                     set_cookies(obtain_cookies(connection))))
   return(ret)
 }
