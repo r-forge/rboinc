@@ -1,6 +1,6 @@
 # Original file name: "connection.R"
 # Created: 2021.02.02
-# Last modified: 2021.12.15
+# Last modified: 2021.12.16
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -204,5 +204,5 @@ close_connection = function(connection)
     url = gsub("&amp;", "&", url)
     res = GET(url, handle = connection$handle)
   }
-  NULL
+  ret = NULL
 }

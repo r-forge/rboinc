@@ -1,6 +1,6 @@
 # Original file name: "makeArchive.R"
 # Created: 2021.02.03
-# Last modified: 2021.12.14
+# Last modified: 2021.12.16
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -11,27 +11,45 @@
 
 generate_r_script = function(original_work_func_name, init, glob_vars, packages)
 {
-  # This script tries to install doParallel because it isn't installed in
-  # current versions of prebuild VMs.
+  # Crutch 1: This script tries to install doParallel because it isn't installed
+  # in current versions of prebuild VMs.
+  # Crutch 2: I forgot to create a folder in the virtual machine and so that the
+  # packages are installed, I create it in the script. 
+  # Crutch 3: I set repos = 'http://cran.us.r-project.org' because r don't 
+  # install packages if mirror isn't set.
+  # Crutch 4 RBOINC_is_installed_flag
   #str = "library(doParallel)\nlibrary(foreach)\nlibrary(parallel)\n"
   str = paste0(
+    "dir.create(Sys.getenv('R_LIBS_USER'), FALSE, TRUE)\n",
+    "RBOINC_is_installed_flag = FALSE\n",
     "if(!require(doParallel)){\n",
-      "install.packages('doParallel', repos = c('http://rforge.net', 'http://cran.rstudio.org'))\n",
-      "library(doParallel)\n",
+    "  install.packages('doParallel', lib = Sys.getenv('R_LIBS_USER'), repos = 'http://cran.us.r-project.org')\n",
+    "  RBOINC_is_installed_flag = TRUE\n",
     "}\n",
     "library(foreach)\n",
     "library(parallel)\n")
   for(val in packages){
-    str = paste0(str, "if(!require(", val, ")){\n\tinstall.packages(\"", val, "\", repos = c('http://rforge.net', 'http://cran.rstudio.org'))\n",
-                 "  library(", val, ")\n}\n")
+    str = paste0(str, 
+    "if(!require(", val, ")){\n",
+    "  install.packages('", val, "', lib = Sys.getenv('R_LIBS_USER'), repos = 'http://cran.us.r-project.org')\n",
+    "  RBOINC_is_installed_flag = TRUE\n",
+    "}\n")
+  }
+  for(val in packages){
+    str = paste0(str,
+    "library('", val, "')\n")             
   }
   str = paste0(str,
-    "load(\"code.rda\")\n",
-    "load(\"data.rda\")\n",
-    "setwd(\"./files/\")\n",
+    "if(RBOINC_is_installed_flag) { \n", 
+    "  system('Rscript code.R')\n",
+    "  quit()\n",
+    "}\n")
+  str = paste0(str,
+    "load('code.rda')\n",
+    "load('data.rda')\n",
+    "setwd('./files/')\n",
     "RBOINC_cluster = makeCluster(detectCores())\n",
-    "registerDoParallel(RBOINC_cluster)\n",
-    original_work_func_name, " = RBOINC_work_func\n")
+    "registerDoParallel(RBOINC_cluster)\n")
   if(!is.null(glob_vars)){
     str = paste0(str, "list2env(RBOINC_global_vars, .GlobalEnv)\n")
   }
@@ -40,20 +58,16 @@ generate_r_script = function(original_work_func_name, init, glob_vars, packages)
   }
   str = paste0(str, "result = foreach(value = RBOINC_data")
   if(length(packages) > 0){
-    str = paste0(str, ", .packages = c(\"")
-    str = paste0(str, paste(packages, collapse = "\", \""))
-    str = paste0(str, "\")")
+    str = paste0(str, ", .packages = c('")
+    str = paste0(str, paste(packages, collapse = "', '"))
+    str = paste0(str, "')")
   }
-  str = paste0(str, ", .export = c(\"RBOINC_work_func\"",
-               ", \"", original_work_func_name,"\"")
-  if(!is.null(glob_vars)){
-    str = paste0(str, ", \"RBOINC_global_vars\"")
-  }
-  str = paste0(str, ")) %dopar% {\n")
+  str = paste0(str, ") %dopar% {\n")
   if(!is.null(glob_vars)){
     str = paste0(str, "  list2env(RBOINC_global_vars, .GlobalEnv)\n")
   }
   str = paste0(str,
+    "  ",original_work_func_name, " = RBOINC_work_func\n",
     "  return(list(res = RBOINC_work_func(value$val), pos = value$pos))\n",
     "}\n",
     "setwd('../../shared/')\n",
@@ -66,7 +80,7 @@ make_dirs = function()
 {
   tmp_dir = tempdir()
   tmp_dir = paste0(tmp_dir, "/rboinc-work")
-  dir.create(tmp_dir, FALSE)
+  dir.create(tmp_dir)
   dir.create(paste0(tmp_dir, "/files"))
   dir.create(paste0(tmp_dir, "/data"))
   return(tmp_dir)
@@ -128,10 +142,11 @@ make_archive = function(RBOINC_work_func,
     virtual_compress(paste0(tmp_dir, "/common.tar.xz"),c("code.rda", "code.R", "files"))
     virtual_compress(archive_path, c("common.tar.xz", "data"))
   }, error = function(mess){
-    stop(paste0("Archive making error: \"", mess, "\""))
+    stop(paste0("Archive making error: '", mess, "'"))
   }
   )
   # delete files and return path to archive
+  setwd(old_wd)
   unlink(tmp_dir, recursive = TRUE)
   return(archive_path)
 }
