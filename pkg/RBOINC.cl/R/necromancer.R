@@ -1,11 +1,11 @@
 # Original file name: "necromancer.R"
 # Created: 2021.12.14
-# Last modified: 2021.12.14
+# Last modified: 2022.01.12
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
-# Copyright (c) 2021 Karelian Research Centre of the RAS:
-# Institute of Applied Mathematical Research
+# Copyright (c) 2021-2022 Karelian Research Centre of
+# the RAS: Institute of Applied Mathematical Research
 # All rights reserved
 
 #' @importFrom utils tar
@@ -64,22 +64,20 @@ get_compression_mode = function(tar_version = "")
 
 .onLoad <- function(libname, pkgname) {
   # Workaround for bug #6752:
-  if((Sys.getenv("tar") == "") && (version$major < 4)){
-    packageStartupMessage("Sys.getenv did not find tar and R version < 4.0. Trying to install workaround for compression...")
+  if((Sys.getenv("tar") == "") && ((version$major < 4) || ((version$major == 4)&& (version$minor < 0.3)))){
     tar_version = tryCatch(
       system("tar --version", intern = TRUE )[1],
       error = function(mess){
         return("not_found")
       })
     if(tar_version == "not_found"){
-      packageStartupMessage("FAIL: tar not found in your system. Using default R implementation. Please, install tar and xz.")
+      packageStartupMessage("Your R version may contain a bug that prevents the package from working. Please consider upgrading or install tar and xz.")
     }else{
-      packageStartupMessage(paste0("Detected: ", tar_version, " Checking how tar works..."))
       if (get_compression_mode()){
         pkg.env$is_default_compress_implementation = FALSE
-        packageStartupMessage("SUCCESS: workaround for compression installed.")
+        packageStartupMessage("Your R version will soon be no longer supported by our package. Please consider upgrading.")
       } else {
-        packageStartupMessage("FAIL: xz algorithms is not supported by your tar. Please, install tar and xz.")
+        packageStartupMessage("Your R version may contain a bug that prevents the package from working. Please consider upgrading or install xz.")
       }
     }
   }
@@ -92,15 +90,17 @@ get_compression_mode = function(tar_version = "")
   })
   tar_version = substr(tar_version, 1, 11)[1]
   if(tar_version == "bsdtar 3.3."){
-    packageStartupMessage("bsdtar 3.3.x detected. Trying to install workaround for decompression...")
     default_warn = getOption("warn")
     options(warn = -1)
-    if((system("tar --version", ignore.stdout = TRUE, ignore.stderr = TRUE) == 0) && 
-       (system("xz --version", ignore.stdout = TRUE, ignore.stderr = TRUE) == 0)){
-      pkg.env$is_default_decompress_implementation = FALSE
-      packageStartupMessage("SUCCESS: workaround for decompression installed.")
+    if(system("tar --version", ignore.stdout = TRUE, ignore.stderr = TRUE) == 0){
+      if(system("xz --version", ignore.stdout = TRUE, ignore.stderr = TRUE) == 0){
+        pkg.env$is_default_decompress_implementation = FALSE
+        packageStartupMessage("Your tar version will soon be no longer supported by our package. Please consider upgrading.")
+      } else {
+        packageStartupMessage("Your tar version may contain a bug that prevents the package from working. Please install xz.")
+      }
     }else{
-      packageStartupMessage("FAIL: Please, install tar and xz.")
+      packageStartupMessage("Your tar version may contain a bug that prevents the package from working. Please consider upgrading.")
     }
     options(warn = default_warn)
   }

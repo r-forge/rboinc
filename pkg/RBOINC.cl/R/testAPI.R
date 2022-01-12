@@ -1,11 +1,11 @@
 # Original file name: "testAPI.R"
 # Created: 2021.03.19
-# Last modified: 2021.12.14
+# Last modified: 2022.01.12
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
-# Copyright (c) 2021 Karelian Research Centre of the RAS:
-# Institute of Applied Mathematical Research
+# Copyright (c) 2021-2022 Karelian Research Centre of
+# the RAS: Institute of Applied Mathematical Research
 # All rights reserved
 
 #' @importFrom R.utils printf
@@ -124,7 +124,13 @@ test_jobs = function(work_func,
     dir.create(paste0(t, "/files"), FALSE)
     setwd(t)
     tryCatch({
-      log = system(paste0("Rscript ", t, "/code.R "), TRUE)
+      inst = ""
+      if(!is.null(packages)){
+        inst = system(paste0("Rscript ", t, "/install.R "), TRUE)
+      }
+      log = list(
+        install = inst,
+        code = system(paste0("Rscript ", t, "/code.R "), TRUE))
       tmpenv = new.env()
       obj_list = load(paste0(job_dir, "/shared/result.rda"), tmpenv)
       if((length(obj_list) == 1) && (obj_list[1] == "result")){

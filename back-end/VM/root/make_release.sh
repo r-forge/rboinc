@@ -1,12 +1,12 @@
 #!/bin/bash
 # Original file name: "make_release.sh"
 # Created: 2021.07.12
-# Last modified: 2021.07.16
+# Last modified: 2022.01.11
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
-# Copyright (c) 2021 Karelian Research Centre of the RAS:
-# Institute of Applied Mathematical Research
+# Copyright (c) 2021-2022 Karelian Research Centre of
+# the RAS: Institute of Applied Mathematical Research
 # All rights reserved
 
 echo -e '\033[31m********************************************************************'
@@ -23,6 +23,7 @@ case "$response" in [Yy][Ee][Ss]|[Yy])
     echo "Deleting packages..."
     emerge --deselect sys-boot/grub
     emerge --deselect sys-kernel/gentoo-sources
+    emerge --deselect sys-fs/btrfs-progs
     emerge --depclean --deep
     echo "Deleting kernel..."
     rm -r /usr/src/*
@@ -36,13 +37,8 @@ case "$response" in [Yy][Ee][Ss]|[Yy])
     rm /home/boinc/boinc_app.sh
     cp boinc_app.sh /home/boinc/
     chmod +x /home/boinc/boinc_app.sh
-    echo "Defragment file system..."
-    btrfs filesystem defragment -r /
-    echo "Rebalance btrfs..."
-    btrfs balance start --full-balance /
-    echo "Deleting packages..."
-    emerge --deselect sys-fs/btrfs-progs
-    emerge --depclean --deep
+    chmod +s `which reboot`
+    chmod +s `which shutdown`
     echo "Cleaning logs..."
     truncate -s 0 /var/log/emerge.log
     truncate -s 0 /var/log/emerge-fetch.log
@@ -62,7 +58,7 @@ case "$response" in [Yy][Ee][Ss]|[Yy])
     rm -r /var/cache
     echo "Deleting unnecessary files..."
     rm -r /usr/share/doc/*
-    echo -e "\033[32mCleaning completed. Use Clonezilla to reduce size.\033[0m"
+    echo -e "\033[32mCleaning completed. Copy fs to new disk to reduce size.\033[0m"
     ;;
     *)
     echo "Exiting."

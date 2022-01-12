@@ -1,49 +1,47 @@
 # Original file name: "makeArchive.R"
 # Created: 2021.02.03
-# Last modified: 2021.12.16
+# Last modified: 2022.01.12
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
-# Copyright (c) 2021 Karelian Research Centre of the RAS:
-# Institute of Applied Mathematical Research
+# Copyright (c) 2021-2022 Karelian Research Centre of
+# the RAS: Institute of Applied Mathematical Research
 # All rights reserved
 
 
-generate_r_script = function(original_work_func_name, init, glob_vars, packages)
+gen_r_scripts = function(original_work_func_name, init, glob_vars, packages)
 {
-  # Crutch 1: This script tries to install doParallel because it isn't installed
-  # in current versions of prebuild VMs.
-  # Crutch 2: I forgot to create a folder in the virtual machine and so that the
-  # packages are installed, I create it in the script. 
-  # Crutch 3: I set repos = 'http://cran.us.r-project.org' because r don't 
-  # install packages if mirror isn't set.
-  # Crutch 4 RBOINC_is_installed_flag
-  #str = "library(doParallel)\nlibrary(foreach)\nlibrary(parallel)\n"
-  str = paste0(
-    "dir.create(Sys.getenv('R_LIBS_USER'), FALSE, TRUE)\n",
-    "RBOINC_is_installed_flag = FALSE\n",
-    "if(!require(doParallel)){\n",
-    "  install.packages('doParallel', lib = Sys.getenv('R_LIBS_USER'), repos = 'http://cran.us.r-project.org')\n",
-    "  RBOINC_is_installed_flag = TRUE\n",
-    "}\n",
-    "library(foreach)\n",
-    "library(parallel)\n")
-  for(val in packages){
-    str = paste0(str, 
-    "if(!require(", val, ")){\n",
-    "  install.packages('", val, "', lib = Sys.getenv('R_LIBS_USER'), repos = 'http://cran.us.r-project.org')\n",
-    "  RBOINC_is_installed_flag = TRUE\n",
-    "}\n")
+  # First, create install script
+  inst = ""
+  if(!is.null(packages)){
+    repos = "c("
+    for(val in options('repos')$repos){
+      if(startsWith(val, "http") || startsWith(val, "ftp")){
+        repos = paste0(repos, "'", val, "', ")
+      }
+    }
+    # Add default mirror:
+    repos = paste0(repos, "'https://cloud.r-project.org')")
+    #create a folder for the installed packages just in case:
+    inst = 
+      "dir.create(Sys.getenv('R_LIBS_USER'), FALSE, TRUE)\n"
+    # package installing:
+    for(val in packages){
+      inst = paste0(inst, 
+      "if(!require(", val, ")){\n",
+      "  install.packages('", val, "', lib = Sys.getenv('R_LIBS_USER'), repos = ", repos, ")\n",
+      "}\n")
+    }
   }
+  # Load libraries
+  str = paste0(
+    "library('doParallel')\n",
+    "library('foreach')\n",
+    "library('parallel')\n")
   for(val in packages){
     str = paste0(str,
     "library('", val, "')\n")             
   }
-  str = paste0(str,
-    "if(RBOINC_is_installed_flag) { \n", 
-    "  system('Rscript code.R')\n",
-    "  quit()\n",
-    "}\n")
   str = paste0(str,
     "load('code.rda')\n",
     "load('data.rda')\n",
@@ -73,7 +71,7 @@ generate_r_script = function(original_work_func_name, init, glob_vars, packages)
     "setwd('../../shared/')\n",
     "save(result, file='result.rda', compress='xz', compression_level = 9)\n",
     "stopCluster(RBOINC_cluster)\n")
-  return(str)
+  return(list(code = str, install = inst))
 }
 
 make_dirs = function()
@@ -109,9 +107,15 @@ make_archive = function(RBOINC_work_func,
   }
   save(list = obj_list, file = paste0(tmp_dir, "/code.rda"))
   # save code
+  scripts = gen_r_scripts(original_work_func_name, RBOINC_init_func, RBOINC_global_vars, packages)
   out = file(paste0(tmp_dir, "/code.R"))
-  writeLines(generate_r_script(original_work_func_name, RBOINC_init_func, RBOINC_global_vars, packages), out)
+  writeLines(scripts$code, out)
   close(out)
+  if(scripts$install != ""){
+    out = file(paste0(tmp_dir, "/install.R"))
+    writeLines(scripts$install, out)
+    close(out)
+  }
   # Copy files
   files_dir = paste0(tmp_dir, "/files/")
   for(val in files){
@@ -139,7 +143,13 @@ make_archive = function(RBOINC_work_func,
   on.exit(setwd(old_wd), TRUE)
   setwd(tmp_dir)
   tryCatch({
-    virtual_compress(paste0(tmp_dir, "/common.tar.xz"),c("code.rda", "code.R", "files"))
+    if(scripts$install == ""){
+      virtual_compress(paste0(tmp_dir, "/common.tar.xz"),
+                       c("code.rda", "code.R", "files"))
+    } else {
+      virtual_compress(paste0(tmp_dir, "/common.tar.xz"),
+                       c("code.rda", "code.R", "install.R", "files"))
+    }
     virtual_compress(archive_path, c("common.tar.xz", "data"))
   }, error = function(mess){
     stop(paste0("Archive making error: '", mess, "'"))

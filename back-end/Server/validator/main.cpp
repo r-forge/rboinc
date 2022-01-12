@@ -5,6 +5,9 @@
 // Written by: Astaf'ev Sergey <seryymail@mail.ru>
 // Description: This is universal validator for any R code results.
 // This is a part of RBOINC R package.
+// Copyright (c) 2021-2022 Karelian Research Centre of
+// the RAS: Institute of Applied Mathematical Research
+// All rights reserved
 #include <cstdlib>
 #include <cstring>
 #include <validate_util2.h>

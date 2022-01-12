@@ -1,8 +1,12 @@
-0. Install Vbox Guest Additionals and R in your VM. Also install "doMC" and "foreach" packages.
+0. Install Vbox Guest Additionals and R in your VM. Also install "parallel", "doParallel" and "foreach" packages.
 1. Create regular user with name boinc and home dir /home/boinc in VM.
 2. Make autologin for this user after boot.
-3. Add auto mounting at booting time vboxsf "shared" direcory in <user_dir>/shared
-4. Add auto mounting at booting time tmpfs in <user_dir>/workdir
-5. Add boinc_app.sh to user .bashrc. Use boinc_app.sh file from root dir.
+3. Run R as this user and run  "dir.create(Sys.getenv('R_LIBS_USER'), FALSE, TRUE)".
+4. Add auto mounting at booting time vboxsf "shared" direcory in <user_dir>/shared
+5. Add auto mounting at booting time tmpfs in <user_dir>/workdir
+6. Add boinc_app.sh to user .bashrc. Use boinc_app.sh file from boinc dir.
+7. Copy all files in root dir to your root home dir.
+8. Maintenance VM.
+9. Use prepare_release.sh to reduce size of your VM (safe) and make_release to create VM for BOINC(unsafe).
 
 P.S. Pre-built VMs can be found here: https://disk.yandex.ru/d/e_aItFuMPfKF2A

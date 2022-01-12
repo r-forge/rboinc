@@ -6,8 +6,8 @@
 // License: BSD-3-clause
 // Written by: Astaf'ev Sergey <seryymail@mail.ru>
 // This is a part of RBOINC R package.
-// Copyright (c) 2021 Karelian Research Centre of the RAS:
-// Institute of Applied Mathematical Research
+// Copyright (c) 2021-2022 Karelian Research Centre of
+// the RAS: Institute of Applied Mathematical Research
 // All rights reserved
 
 // Get job status by name
