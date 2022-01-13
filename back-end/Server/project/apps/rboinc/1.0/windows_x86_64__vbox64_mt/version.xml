@@ -2,6 +2,7 @@
    <file>
     <physical_name>vboxwrapper_26167_windows_x86_64.exe</physical_name>
     <main_program/>
+    <gzip/>
   </file>
   <file>
     <physical_name>vbox_job_rboinc_1.0_windows_x86_64.xml</physical_name>

@@ -2,6 +2,7 @@
    <file>
     <physical_name>vboxwrapper_26178_i686-pc-linux-gnu</physical_name>
     <main_program/>
+    <gzip/>
   </file>
   <file>
     <physical_name>vbox_job_rboinc_1.0_i686-pc-linux-gnu.xml</physical_name>
