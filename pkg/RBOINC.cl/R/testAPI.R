@@ -1,6 +1,6 @@
 # Original file name: "testAPI.R"
 # Created: 2021.03.19
-# Last modified: 2022.01.12
+# Last modified: 2022.01.25
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -37,6 +37,8 @@
 #'## Errors and warnings
 #' When errors occur, execution can be stopped with the following messages:
 #' * "Archive making error: \code{<}error message\code{>}"
+#' * "You must specify 'data' or 'n'."
+#' * "The number of tasks must be less or equal than length of data."
 #' @examples
 #' \dontrun{
 #'
@@ -54,7 +56,7 @@
 #'
 #' }
 test_jobs = function(work_func,
-                       data,
+                       data = NULL,
                        n = NULL,
                        init_func = NULL,
                        global_vars = NULL,
@@ -62,11 +64,20 @@ test_jobs = function(work_func,
                        files = c(),
                        callback_function = NULL)
 {
+  is_NULL_data = FALSE
+  if(is.null(data) && is.null(n)){
+    stop("You must specify 'data' or 'n'.")
+  } else if(is.null(n)){
+    n = length(data)
+  } else if(n < 1){
+    stop("The number of tasks must be greater than 0.")
+  } else if(is.null(data)){
+    is_NULL_data = TRUE
+  } else if(n > length(data)){
+    stop("The number of tasks must be less or equal than length of data.")
+  }
   old_wd = getwd()
   on.exit(setwd(old_wd), TRUE)
-  if(is.null(n)){
-    n = length(data)
-  }
   printf("Testing archive making...\t")
   lst = split_list(data, n)
   ar = make_archive(work_func,
@@ -75,7 +86,8 @@ test_jobs = function(work_func,
                     init_func,
                     global_vars,
                     packages,
-                    files)
+                    files,
+                    is_NULL_data)
   if(is.null(ar)){
     printf("Error\n")
     return(NULL)

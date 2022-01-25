@@ -1,6 +1,6 @@
 # Original file name: "makeArchive.R"
 # Created: 2021.02.03
-# Last modified: 2022.01.12
+# Last modified: 2022.01.25
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -9,7 +9,7 @@
 # All rights reserved
 
 
-gen_r_scripts = function(original_work_func_name, init, glob_vars, packages)
+gen_r_scripts = function(original_work_func_name, init, glob_vars, packages, is_NULL_data)
 {
   # First, create install script
   inst = ""
@@ -23,54 +23,71 @@ gen_r_scripts = function(original_work_func_name, init, glob_vars, packages)
     # Add default mirror:
     repos = paste0(repos, "'https://cloud.r-project.org')")
     #create a folder for the installed packages just in case:
-    inst = 
+    inst =
       "dir.create(Sys.getenv('R_LIBS_USER'), FALSE, TRUE)\n"
     # package installing:
     for(val in packages){
-      inst = paste0(inst, 
+      inst = paste0(inst,
       "if(!require(", val, ")){\n",
       "  install.packages('", val, "', lib = Sys.getenv('R_LIBS_USER'), repos = ", repos, ")\n",
       "}\n")
     }
   }
   # Load libraries
-  str = paste0(
+  if(!is_NULL_data){
+    str = paste0(
     "library('doParallel')\n",
     "library('foreach')\n",
     "library('parallel')\n")
+  }else {
+    str = ""
+  }
   for(val in packages){
     str = paste0(str,
-    "library('", val, "')\n")             
+    "library('", val, "')\n")
   }
   str = paste0(str,
     "load('code.rda')\n",
     "load('data.rda')\n",
-    "setwd('./files/')\n",
+    "setwd('./files/')\n")
+  if(!is_NULL_data){
+    str = paste0(str,
     "RBOINC_cluster = makeCluster(detectCores())\n",
     "registerDoParallel(RBOINC_cluster)\n")
+  }
   if(!is.null(glob_vars)){
     str = paste0(str, "list2env(RBOINC_global_vars, .GlobalEnv)\n")
   }
   if(!is.null(init)){
     str = paste0(str, "RBOINC_init_func()\n")
   }
-  str = paste0(str, "result = foreach(value = RBOINC_data")
-  if(length(packages) > 0){
-    str = paste0(str, ", .packages = c('")
-    str = paste0(str, paste(packages, collapse = "', '"))
-    str = paste0(str, "')")
-  }
-  str = paste0(str, ") %dopar% {\n")
-  if(!is.null(glob_vars)){
-    str = paste0(str, "  list2env(RBOINC_global_vars, .GlobalEnv)\n")
-  }
-  str = paste0(str,
+  if(!is_NULL_data){
+    str = paste0(str, "result = foreach(value = RBOINC_data")
+    if(length(packages) > 0){
+      str = paste0(str, ", .packages = c('")
+      str = paste0(str, paste(packages, collapse = "', '"))
+      str = paste0(str, "')")
+    }
+    str = paste0(str, ") %dopar% {\n")
+    if(!is.null(glob_vars)){
+      str = paste0(str, "  list2env(RBOINC_global_vars, .GlobalEnv)\n")
+    }
+    print(is_NULL_data)
+    str = paste0(str,
     "  ",original_work_func_name, " = RBOINC_work_func\n",
     "  return(list(res = RBOINC_work_func(value$val), pos = value$pos))\n",
-    "}\n",
+    "}\n")
+  } else {
+    str = paste0(str,
+    "result = list(list(res = RBOINC_work_func(), pos = RBOINC_data[[1]]$pos))\n")
+  }
+  str = paste0(str,
     "setwd('../../shared/')\n",
-    "save(result, file='result.rda', compress='xz', compression_level = 9)\n",
+    "save(result, file='result.rda', compress='xz', compression_level = 9)\n")
+  if(!is_NULL_data){
+    str = paste0(str,
     "stopCluster(RBOINC_cluster)\n")
+  }
   return(list(code = str, install = inst))
 }
 
@@ -90,7 +107,8 @@ make_archive = function(RBOINC_work_func,
                         RBOINC_init_func = NULL,
                         RBOINC_global_vars = NULL,
                         packages = c(),
-                        files = c())
+                        files = c(),
+                        is_NULL_data)
 {
   if(!is.list(data)){
     return(NULL)
@@ -107,7 +125,8 @@ make_archive = function(RBOINC_work_func,
   }
   save(list = obj_list, file = paste0(tmp_dir, "/code.rda"))
   # save code
-  scripts = gen_r_scripts(original_work_func_name, RBOINC_init_func, RBOINC_global_vars, packages)
+  scripts = gen_r_scripts(original_work_func_name, RBOINC_init_func,
+                          RBOINC_global_vars, packages, is_NULL_data)
   out = file(paste0(tmp_dir, "/code.R"))
   writeLines(scripts$code, out)
   close(out)

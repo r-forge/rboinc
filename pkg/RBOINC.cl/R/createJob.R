@@ -1,6 +1,6 @@
 # Original file name: "createJob.R"
 # Created: 2021.02.04
-# Last modified: 2021.10.19
+# Last modified: 2022.01.25
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -126,6 +126,9 @@ register_jobs_ssh = function(connection, files)
 
 split_list = function(data, n)
 {
+  if(is.null(data)){
+    data = rep(0, n)
+  }
   l = length(data)
   n = ifelse(n > l, l, n)
   ret = vector("list", n)
@@ -162,8 +165,9 @@ split_list = function(data, n)
 #' @param connection a connection returned by
 #' \link[=create_connection]{create_connection}.
 #' @param work_func data processing function with prototype
-#' \code{function(data_element)}. This function runs for each element in data.
-#' This function can be recursive.
+#' \code{function(data_element)} if 'data' is specified or \code{function()} if
+#' 'n' is specified. This function runs for each element in data. This function
+#' can be recursive.
 #' @param data data for processing.  Must be a numerable list or vector.
 #' @param n a number of jobs. This parameter must be less than or equal to the
 #' length of the data. If not specified, then the number of jobs will be equal
@@ -227,6 +231,7 @@ split_list = function(data, n)
 #'   * "The number of tasks must be greater than 0."
 #'   * "The number of tasks must be less than or equal to the length of the data."
 #'   * "Archive making error: \code{<}error message\code{>}"
+#'   * "You must specify 'data' or 'n'."
 #'
 #' @examples
 #' \dontrun{
@@ -254,17 +259,22 @@ split_list = function(data, n)
 #' }
 create_jobs = function(connection,
                          work_func,
-                         data,
+                         data = NULL,
                          n = NULL,
                          init_func = NULL,
                          global_vars = NULL,
                          packages = c(),
                          files = c())
 {
-  if(is.null(n)){
+  is_NULL_data = FALSE
+  if(is.null(data) && is.null(n)){
+    stop("You must specify 'data' or 'n'.")
+  } else if(is.null(n)){
     n = length(data)
   } else if(n < 1){
     stop("The number of tasks must be greater than 0.")
+  } else if(is.null(data)){
+    is_NULL_data = TRUE
   } else if(n > length(data)){
     stop("The number of tasks must be less or equal than length of data.")
   }
@@ -279,7 +289,8 @@ create_jobs = function(connection,
                     init_func,
                     global_vars,
                     packages,
-                    files)
+                    files,
+                    is_NULL_data)
   if(connection$type == "ssh"){
     # Send archive to server
     files = stage_files_ssh(connection, ar, n)

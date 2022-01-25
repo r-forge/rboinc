@@ -7,7 +7,7 @@
 create_jobs(
   connection,
   work_func,
-  data,
+  data = NULL,
   n = NULL,
   init_func = NULL,
   global_vars = NULL,
@@ -20,8 +20,9 @@ create_jobs(
 \link[=create_connection]{create_connection}.}
 
 \item{work_func}{data processing function with prototype
-\code{function(data_element)}. This function runs for each element in data.
-This function can be recursive.}
+\code{function(data_element)} if 'data' is specified or \code{function()} if
+'n' is specified. This function runs for each element in data. This function
+can be recursive.}
 
 \item{data}{data for processing.  Must be a numerable list or vector.}
 
@@ -109,6 +110,7 @@ When errors occur, execution can be stopped with the following messages:
 \item "The number of tasks must be greater than 0."
 \item "The number of tasks must be less than or equal to the length of the data."
 \item "Archive making error: \code{<}error message\code{>}"
+\item "You must specify 'data' or 'n'."
 }
 }
 }

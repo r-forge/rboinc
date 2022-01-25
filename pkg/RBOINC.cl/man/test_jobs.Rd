@@ -6,7 +6,7 @@
 \usage{
 test_jobs(
   work_func,
-  data,
+  data = NULL,
   n = NULL,
   init_func = NULL,
   global_vars = NULL,
@@ -17,8 +17,9 @@ test_jobs(
 }
 \arguments{
 \item{work_func}{data processing function with prototype
-\code{function(data_element)}. This function runs for each element in data.
-This function can be recursive.}
+\code{function(data_element)} if 'data' is specified or \code{function()} if
+'n' is specified. This function runs for each element in data. This function
+can be recursive.}
 
 \item{data}{data for processing.  Must be a numerable list or vector.}
 
@@ -63,6 +64,8 @@ completion.
 When errors occur, execution can be stopped with the following messages:
 \itemize{
 \item "Archive making error: \code{<}error message\code{>}"
+\item "You must specify 'data' or 'n'."
+\item "The number of tasks must be less or equal than length of data."
 }
 }
 }
