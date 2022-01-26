@@ -1,6 +1,6 @@
 # Original file name: "makeArchive.R"
 # Created: 2021.02.03
-# Last modified: 2022.01.25
+# Last modified: 2022.01.26
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -9,7 +9,7 @@
 # All rights reserved
 
 
-gen_r_scripts = function(original_work_func_name, init, glob_vars, packages, is_NULL_data)
+gen_r_scripts = function(original_work_func_name, init, glob_vars, packages, install_func, is_NULL_data, max_data_count)
 {
   # First, create install script
   inst = ""
@@ -23,8 +23,7 @@ gen_r_scripts = function(original_work_func_name, init, glob_vars, packages, is_
     # Add default mirror:
     repos = paste0(repos, "'https://cloud.r-project.org')")
     #create a folder for the installed packages just in case:
-    inst =
-      "dir.create(Sys.getenv('R_LIBS_USER'), FALSE, TRUE)\n"
+    inst = "dir.create(Sys.getenv('R_LIBS_USER'), FALSE, TRUE)\n"
     # package installing:
     for(val in packages){
       inst = paste0(inst,
@@ -32,9 +31,18 @@ gen_r_scripts = function(original_work_func_name, init, glob_vars, packages, is_
       "  install.packages('", val, "', lib = Sys.getenv('R_LIBS_USER'), repos = ", repos, ")\n",
       "}\n")
     }
+    if(!is.null(install_func)){
+      inst = paste0(inst,
+      "RBOINC_not_installed = setdiff(c('", paste(packages, collapse = "', '"),"'), installed.packages()[,1])\n",
+      "if(length(RBOINC_not_installed) > 0){\n",
+      "  load('code.rda')\n",
+      "  RBOINC_additional_inst_func(RBOINC_not_installed) \n",
+      "}\n") 
+    }
   }
+  # Second, create job script
   # Load libraries
-  if(!is_NULL_data){
+  if((!is_NULL_data) && (max_data_count > 1)){
     str = paste0(
     "library('doParallel')\n",
     "library('foreach')\n",
@@ -50,7 +58,7 @@ gen_r_scripts = function(original_work_func_name, init, glob_vars, packages, is_
     "load('code.rda')\n",
     "load('data.rda')\n",
     "setwd('./files/')\n")
-  if(!is_NULL_data){
+  if((!is_NULL_data) && (max_data_count > 1)){
     str = paste0(str,
     "RBOINC_cluster = makeCluster(detectCores())\n",
     "registerDoParallel(RBOINC_cluster)\n")
@@ -61,7 +69,7 @@ gen_r_scripts = function(original_work_func_name, init, glob_vars, packages, is_
   if(!is.null(init)){
     str = paste0(str, "RBOINC_init_func()\n")
   }
-  if(!is_NULL_data){
+  if((!is_NULL_data) && (max_data_count > 1)){
     str = paste0(str, "result = foreach(value = RBOINC_data")
     if(length(packages) > 0){
       str = paste0(str, ", .packages = c('")
@@ -72,19 +80,25 @@ gen_r_scripts = function(original_work_func_name, init, glob_vars, packages, is_
     if(!is.null(glob_vars)){
       str = paste0(str, "  list2env(RBOINC_global_vars, .GlobalEnv)\n")
     }
-    print(is_NULL_data)
     str = paste0(str,
     "  ",original_work_func_name, " = RBOINC_work_func\n",
     "  return(list(res = RBOINC_work_func(value$val), pos = value$pos))\n",
     "}\n")
-  } else {
+  } else if(is_NULL_data) {
     str = paste0(str,
-    "result = list(list(res = RBOINC_work_func(), pos = RBOINC_data[[1]]$pos))\n")
+    original_work_func_name, " = RBOINC_work_func\n",
+    "result = list(list(res = RBOINC_work_func(), ",
+                       "pos = RBOINC_data[[1]]$pos))\n")
+  } else{
+    str = paste0(str,
+    original_work_func_name, " = RBOINC_work_func\n",
+    "result = list(list(res = RBOINC_work_func(RBOINC_data[[1]]$val),",
+                       "pos = RBOINC_data[[1]]$pos))\n")
   }
   str = paste0(str,
     "setwd('../../shared/')\n",
     "save(result, file='result.rda', compress='xz', compression_level = 9)\n")
-  if(!is_NULL_data){
+  if((!is_NULL_data) && (max_data_count > 1)){
     str = paste0(str,
     "stopCluster(RBOINC_cluster)\n")
   }
@@ -108,11 +122,9 @@ make_archive = function(RBOINC_work_func,
                         RBOINC_global_vars = NULL,
                         packages = c(),
                         files = c(),
+                        RBOINC_additional_inst_func = NULL,
                         is_NULL_data)
 {
-  if(!is.list(data)){
-    return(NULL)
-  }
   # Create temporary dir for archive
   tmp_dir = make_dirs()
   # Save funcions and global vars
@@ -123,10 +135,15 @@ make_archive = function(RBOINC_work_func,
   if(!is.null(RBOINC_global_vars)){
     obj_list = cbind(obj_list, "RBOINC_global_vars")
   }
+  if(!is.null(RBOINC_additional_inst_func)){
+    obj_list = cbind(obj_list, "RBOINC_additional_inst_func")
+  }
   save(list = obj_list, file = paste0(tmp_dir, "/code.rda"))
   # save code
   scripts = gen_r_scripts(original_work_func_name, RBOINC_init_func,
-                          RBOINC_global_vars, packages, is_NULL_data)
+                          RBOINC_global_vars, packages,
+                          RBOINC_additional_inst_func, 
+                          is_NULL_data, data$max_len)
   out = file(paste0(tmp_dir, "/code.R"))
   writeLines(scripts$code, out)
   close(out)
@@ -149,7 +166,7 @@ make_archive = function(RBOINC_work_func,
   # write data
   data_dir = paste0(tmp_dir, "/data/")
   num = 0
-  for(RBOINC_data in data){
+  for(RBOINC_data in data$data){
     save(RBOINC_data, file = paste0(data_dir, num, ".rda"))
     num = num + 1
   }

@@ -12,7 +12,8 @@ create_jobs(
   init_func = NULL,
   global_vars = NULL,
   packages = c(),
-  files = c()
+  files = c(),
+  install_func = NULL
 )
 }
 \arguments{
@@ -41,6 +42,11 @@ separate threads. This function can not to be recursive.}
 
 \item{files}{a string vector with the files names that should be available
 for jobs.}
+
+\item{install_func}{installation function with prototype
+\code{function(packages)}, where packages is a vector with package names
+which cannot be installed from repositories. This function can not to be
+recursive.}
 }
 \value{
 a list with current states of jobs. This list contains the following
@@ -56,7 +62,7 @@ The length of this list is equal to the length of the data;
 \item "initialization" - jobs have been submitted to the server, but their
 status was not requested by update_jobs_status;
 \item "in_progress" - BOINC serves jobs;
-\item "done" - computations are complete, the result was downloaded;
+\item "done" - computations are complete, the results were downloaded;
 \item "warning" a recoverable error occurred during the job processing;
 \item "error" - a serious error occurred during the job processing;
 \item "aborted" - processing was canceled using the
@@ -77,6 +83,9 @@ for compiling C++ functions from sources transferred through files parameter.
 The job is performed as follows:
 \enumerate{
 \item The necessary \code{packages} are first loaded/installed;
+\item If some packages were not installed, the
+\code{RBOINC_additional_inst_func} function is called which is renamed
+\code{install_func}.
 \item The \code{RBOINC_work_func} and \code{RBOINC_init_func} functions are
 loaded which are renamed \code{work_func} and \code{init_func};
 \item The \code{RBOINC_data} object is loaded which is renamed part of
@@ -92,6 +101,31 @@ function is called;
 \item The job is divided into sub-tasks and is performed in parallel.
 \item Execution results are collected together and sent to the BOINC server.
 }
+\subsection{Restrictions}{
+
+Don't create or use objects that begin with the prefix \code{RBOINC_}.
+
+Don't rely on any packages to be loaded automatically. Specify the necessary
+packages explicitly through the \code{packages} parameter.
+
+Don't pass in global_vars objects that cannot be saved, such as functions
+compiled from C++ code.
+
+Packages passed in \code{packages} will be installed from the repositories
+specified in your R environment. Additionally, https://cloud.r-project.org is
+added to the list of repositories. Only CRAN-like repositories are supported.
+
+Packages that require compilation may depend on header files and libraries
+that are not in the VM. Such packages cannot be installed in the standard
+way.
+
+Don't rely on \code{install_func} to always be called. It will be called only
+if installation of some packages from repositories failed with a parameter
+equal to the vector with names of these packages. Do not use packages in this
+function that were passed through the \code{packages} parameter. If the use
+of these packages is necessary, restart the installation script "install.R".
+}
+
 \subsection{Errors and warnings}{
 
 When errors occur, execution can be stopped with the following messages:

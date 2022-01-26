@@ -27,7 +27,7 @@ The length of this list is equal to the length of the data;
 \item "initialization" - jobs have been submitted to the server, but their
 status was not requested by update_jobs_status;
 \item "in_progress" - BOINC serves jobs;
-\item "done" - computations are complete, the result was downloaded;
+\item "done" - computations are complete, the results were downloaded;
 \item "warning" a recoverable error occurred during the job processing;
 \item "error" - a serious error occurred during the job processing;
 \item "aborted" - processing was canceled using the

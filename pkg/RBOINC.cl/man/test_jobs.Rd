@@ -12,7 +12,8 @@ test_jobs(
   global_vars = NULL,
   packages = c(),
   files = c(),
-  callback_function = NULL
+  callback_function = NULL,
+  install_func = NULL
 )
 }
 \arguments{
@@ -42,6 +43,11 @@ for jobs.}
 \item{callback_function}{a function with prototype
 \code{function(result_element)} that is called for each result after loading.
 The value returned by this function is placed in the result list.}
+
+\item{install_func}{installation function with prototype
+\code{function(packages)}, where packages is a vector with package names
+which cannot be installed from repositories. This function can not to be
+recursive.}
 }
 \value{
 a list with states of jobs. This list contains the following fields:

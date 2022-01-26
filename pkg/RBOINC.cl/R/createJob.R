@@ -1,6 +1,6 @@
 # Original file name: "createJob.R"
 # Created: 2021.02.04
-# Last modified: 2022.01.25
+# Last modified: 2022.01.26
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -130,7 +130,6 @@ split_list = function(data, n)
     data = rep(0, n)
   }
   l = length(data)
-  n = ifelse(n > l, l, n)
   ret = vector("list", n)
   maxLen = ceiling(l/n)
   minLen = floor(l/n)
@@ -157,7 +156,7 @@ split_list = function(data, n)
       i = i + 1
     }
   }
-  return(ret)
+  return(list(data = ret, max_len = maxLen))
 }
 
 #' @title create_jobs
@@ -180,6 +179,10 @@ split_list = function(data, n)
 #' @param packages a string vector with imported packages names.
 #' @param files a string vector with the files names that should be available
 #' for jobs.
+#' @param install_func installation function with prototype 
+#' \code{function(packages)}, where packages is a vector with package names 
+#' which cannot be installed from repositories. This function can not to be 
+#' recursive.
 #' @return a list with current states of jobs. This list contains the following
 #' fields:
 #' * batch_id - ID of the batch that includes the jobs;
@@ -191,7 +194,7 @@ split_list = function(data, n)
 #'   * "initialization" - jobs have been submitted to the server, but their
 #'   status was not requested by update_jobs_status;
 #'   * "in_progress" - BOINC serves jobs;
-#'   * "done" - computations are complete, the result was downloaded;
+#'   * "done" - computations are complete, the results were downloaded;
 #'   * "warning" a recoverable error occurred during the job processing;
 #'   * "error" - a serious error occurred during the job processing;
 #'   * "aborted" - processing was canceled using the
@@ -205,6 +208,9 @@ split_list = function(data, n)
 #'
 #' The job is performed as follows:
 #' 1. The necessary \code{packages} are first loaded/installed;
+#' 1. If some packages were not installed, the 
+#' \code{RBOINC_additional_inst_func} function is called which is renamed 
+#' \code{install_func}.
 #' 1. The \code{RBOINC_work_func} and \code{RBOINC_init_func} functions are
 #' loaded which are renamed \code{work_func} and \code{init_func};
 #' 1. The \code{RBOINC_data} object is loaded which is renamed part of
@@ -219,7 +225,30 @@ split_list = function(data, n)
 #' 1. The \code{RBOINC_init_func()} function is called;
 #' 1. The job is divided into sub-tasks and is performed in parallel.
 #' 1. Execution results are collected together and sent to the BOINC server.
-#'
+#' 
+#' ## Restrictions
+#' Don't create or use objects that begin with the prefix \code{RBOINC_}.
+#' 
+#' Don't rely on any packages to be loaded automatically. Specify the necessary 
+#' packages explicitly through the \code{packages} parameter.
+#' 
+#' Don't pass in global_vars objects that cannot be saved, such as functions
+#' compiled from C++ code.
+#' 
+#' Packages passed in \code{packages} will be installed from the repositories 
+#' specified in your R environment. Additionally, https://cloud.r-project.org is
+#' added to the list of repositories. Only CRAN-like repositories are supported.
+#' 
+#' Packages that require compilation may depend on header files and libraries
+#' that are not in the VM. Such packages cannot be installed in the standard 
+#' way.
+#' 
+#' Don't rely on \code{install_func} to always be called. It will be called only
+#' if installation of some packages from repositories failed with a parameter 
+#' equal to the vector with names of these packages. Do not use packages in this
+#' function that were passed through the \code{packages} parameter. If the use 
+#' of these packages is necessary, restart the installation script "install.R".
+#' 
 #' ## Errors and warnings
 #' When errors occur, execution can be stopped with the following messages:
 #' * for http connections:
@@ -258,13 +287,14 @@ split_list = function(data, n)
 #' close_connection(con)
 #' }
 create_jobs = function(connection,
-                         work_func,
-                         data = NULL,
-                         n = NULL,
-                         init_func = NULL,
-                         global_vars = NULL,
-                         packages = c(),
-                         files = c())
+                       work_func,
+                       data = NULL,
+                       n = NULL,
+                       init_func = NULL,
+                       global_vars = NULL,
+                       packages = c(),
+                       files = c(),
+                       install_func = NULL)
 {
   is_NULL_data = FALSE
   if(is.null(data) && is.null(n)){
@@ -290,6 +320,7 @@ create_jobs = function(connection,
                     global_vars,
                     packages,
                     files,
+                    install_func,
                     is_NULL_data)
   if(connection$type == "ssh"){
     # Send archive to server

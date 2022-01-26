@@ -1,6 +1,6 @@
 # Original file name: "testAPI.R"
 # Created: 2021.03.19
-# Last modified: 2022.01.25
+# Last modified: 2022.01.26
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -62,7 +62,8 @@ test_jobs = function(work_func,
                        global_vars = NULL,
                        packages = c(),
                        files = c(),
-                       callback_function = NULL)
+                       callback_function = NULL,
+                       install_func = NULL)
 {
   is_NULL_data = FALSE
   if(is.null(data) && is.null(n)){
@@ -87,6 +88,7 @@ test_jobs = function(work_func,
                     global_vars,
                     packages,
                     files,
+                    install_func,
                     is_NULL_data)
   if(is.null(ar)){
     printf("Error\n")
