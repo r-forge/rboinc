@@ -179,9 +179,9 @@ split_list = function(data, n)
 #' @param packages a string vector with imported packages names.
 #' @param files a string vector with the files names that should be available
 #' for jobs.
-#' @param install_func installation function with prototype 
-#' \code{function(packages)}, where packages is a vector with package names 
-#' which cannot be installed from repositories. This function can not to be 
+#' @param install_func installation function with prototype
+#' \code{function(packages)}, where packages is a vector with package names
+#' which cannot be installed from repositories. This function can not to be
 #' recursive.
 #' @return a list with current states of jobs. This list contains the following
 #' fields:
@@ -205,11 +205,12 @@ split_list = function(data, n)
 #'
 #' Parameter init_func is necessary for additional initialization, for example,
 #' for compiling C++ functions from sources transferred through files parameter.
+#' It runs for all computation nodes but not for main node.
 #'
 #' The job is performed as follows:
 #' 1. The necessary \code{packages} are first loaded/installed;
-#' 1. If some packages were not installed, the 
-#' \code{RBOINC_additional_inst_func} function is called which is renamed 
+#' 1. If some packages were not installed, the
+#' \code{RBOINC_additional_inst_func} function is called which is renamed
 #' \code{install_func}.
 #' 1. The \code{RBOINC_work_func} and \code{RBOINC_init_func} functions are
 #' loaded which are renamed \code{work_func} and \code{init_func};
@@ -225,30 +226,34 @@ split_list = function(data, n)
 #' 1. The \code{RBOINC_init_func()} function is called;
 #' 1. The job is divided into sub-tasks and is performed in parallel.
 #' 1. Execution results are collected together and sent to the BOINC server.
-#' 
+#'
 #' ## Restrictions
 #' Don't create or use objects that begin with the prefix \code{RBOINC_}.
-#' 
-#' Don't rely on any packages to be loaded automatically. Specify the necessary 
+#'
+#' Don't rely on any packages to be loaded automatically. Specify the necessary
 #' packages explicitly through the \code{packages} parameter.
-#' 
+#'
 #' Don't pass in global_vars objects that cannot be saved, such as functions
 #' compiled from C++ code.
-#' 
-#' Packages passed in \code{packages} will be installed from the repositories 
+#'
+#' Packages passed in \code{packages} will be installed from the repositories
 #' specified in your R environment. Additionally, https://cloud.r-project.org is
 #' added to the list of repositories. Only CRAN-like repositories are supported.
-#' 
+#'
 #' Packages that require compilation may depend on header files and libraries
-#' that are not in the VM. Such packages cannot be installed in the standard 
+#' that are not in the VM. Such packages cannot be installed in the standard
 #' way.
-#' 
-#' Don't rely on \code{install_func} to always be called. It will be called only
-#' if installation of some packages from repositories failed with a parameter 
-#' equal to the vector with names of these packages. Do not use packages in this
-#' function that were passed through the \code{packages} parameter. If the use 
-#' of these packages is necessary, restart the installation script "install.R".
-#' 
+#'
+#' init_func is only called on processing nodes created by makeCluster. if
+#' nothing is being processed in the master node, it will not be called in
+#' master node.
+#'
+#' install_func is always called. As a parameter, it is passed a vector of
+#' strings with the names of packages for which the installation failed a
+#' parameter equal to the vector with names of packages installation of that is
+#' failed. If you need to use functions from packages passed to \code{packages},
+#' then refer to them with a colon.
+#'
 #' ## Errors and warnings
 #' When errors occur, execution can be stopped with the following messages:
 #' * for http connections:

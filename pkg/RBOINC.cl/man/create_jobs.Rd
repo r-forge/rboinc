@@ -79,6 +79,7 @@ The number of jobs must be greater than zero.
 
 Parameter init_func is necessary for additional initialization, for example,
 for compiling C++ functions from sources transferred through files parameter.
+It runs for all computation nodes but not for main node.
 
 The job is performed as follows:
 \enumerate{
@@ -119,11 +120,15 @@ Packages that require compilation may depend on header files and libraries
 that are not in the VM. Such packages cannot be installed in the standard
 way.
 
-Don't rely on \code{install_func} to always be called. It will be called only
-if installation of some packages from repositories failed with a parameter
-equal to the vector with names of these packages. Do not use packages in this
-function that were passed through the \code{packages} parameter. If the use
-of these packages is necessary, restart the installation script "install.R".
+init_func is only called on processing nodes created by makeCluster. if
+nothing is being processed in the master node, it will not be called in
+master node.
+
+install_func is always called. As a parameter, it is passed a vector of
+strings with the names of packages for which the installation failed a
+parameter equal to the vector with names of packages installation of that is
+failed. If you need to use functions from packages passed to \code{packages},
+then refer to them with a colon.
 }
 
 \subsection{Errors and warnings}{

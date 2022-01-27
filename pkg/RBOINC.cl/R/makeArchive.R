@@ -1,6 +1,6 @@
 # Original file name: "makeArchive.R"
 # Created: 2021.02.03
-# Last modified: 2022.01.26
+# Last modified: 2022.01.27
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -34,10 +34,8 @@ gen_r_scripts = function(original_work_func_name, init, glob_vars, packages, ins
     if(!is.null(install_func)){
       inst = paste0(inst,
       "RBOINC_not_installed = setdiff(c('", paste(packages, collapse = "', '"),"'), installed.packages()[,1])\n",
-      "if(length(RBOINC_not_installed) > 0){\n",
-      "  load('code.rda')\n",
-      "  RBOINC_additional_inst_func(RBOINC_not_installed) \n",
-      "}\n") 
+      "load('code.rda')\n",
+      "RBOINC_additional_inst_func(RBOINC_not_installed)\n")
     }
   }
   # Second, create job script
@@ -64,10 +62,25 @@ gen_r_scripts = function(original_work_func_name, init, glob_vars, packages, ins
     "registerDoParallel(RBOINC_cluster)\n")
   }
   if(!is.null(glob_vars)){
-    str = paste0(str, "list2env(RBOINC_global_vars, .GlobalEnv)\n")
+    str = paste0(str,
+    "list2env(RBOINC_global_vars, .GlobalEnv)\n")
   }
-  if(!is.null(init)){
-    str = paste0(str, "RBOINC_init_func()\n")
+  if(!is.null(init) && (!is_NULL_data)){
+    str = paste0(str,
+    "clusterExport(RBOINC_cluster, ls(globalenv()))\n",
+    "RBOINC_pseudo_init_func = function (RBOINC_procnum)\n",
+    "{\n")
+    for(val in packages){
+      str = paste0(str,
+    "  library('", val, "')\n")
+    }
+    str = paste0(str,
+    "  RBOINC_init_func()\n",
+    "}\n",
+    "clusterCall(cl = RBOINC_cluster, fun =  RBOINC_pseudo_init_func, detectCores())\n")
+  } else if(!is.null(init)){
+    str = paste0(str,
+    "RBOINC_init_func()\n")
   }
   if((!is_NULL_data) && (max_data_count > 1)){
     str = paste0(str, "result = foreach(value = RBOINC_data")
@@ -77,9 +90,6 @@ gen_r_scripts = function(original_work_func_name, init, glob_vars, packages, ins
       str = paste0(str, "')")
     }
     str = paste0(str, ") %dopar% {\n")
-    if(!is.null(glob_vars)){
-      str = paste0(str, "  list2env(RBOINC_global_vars, .GlobalEnv)\n")
-    }
     str = paste0(str,
     "  ",original_work_func_name, " = RBOINC_work_func\n",
     "  return(list(res = RBOINC_work_func(value$val), pos = value$pos))\n",
@@ -145,7 +155,7 @@ make_archive = function(RBOINC_work_func,
   # save code
   scripts = gen_r_scripts(original_work_func_name, RBOINC_init_func,
                           RBOINC_global_vars, packages,
-                          RBOINC_additional_inst_func, 
+                          RBOINC_additional_inst_func,
                           is_NULL_data, data$max_len)
   out = file(paste0(tmp_dir, "/code.R"))
   writeLines(scripts$code, out)
