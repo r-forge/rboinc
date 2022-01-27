@@ -109,6 +109,9 @@ make_dirs = function()
 {
   tmp_dir = tempdir()
   tmp_dir = paste0(tmp_dir, "/rboinc-work")
+  if(dir.exists(tmp_dir)){
+    unlink(tmp_dir, recursive = TRUE, force = TRUE)
+  }
   dir.create(tmp_dir)
   dir.create(paste0(tmp_dir, "/files"))
   dir.create(paste0(tmp_dir, "/data"))
@@ -193,6 +196,6 @@ make_archive = function(RBOINC_work_func,
   )
   # delete files and return path to archive
   setwd(old_wd)
-  unlink(tmp_dir, recursive = TRUE)
+  unlink(tmp_dir, recursive = TRUE, force = TRUE)
   return(archive_path)
 }
