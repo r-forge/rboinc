@@ -345,7 +345,7 @@ for(val in res){
 ```
 
 ### Параметры init_func и files
-Через параметр files можно передать дополнительные файлы. Создадим файл со следующим С++ кодом:
+Через параметр files можно передать дополнительные файлы. Раскидаем по 2-м файл следующий С++ код:
 ```{c eval = FALSE}
 #include <Rcpp.h>
 using namespace Rcpp;
@@ -355,9 +355,15 @@ NumericVector m(NumericVector val)
 {
     return val*3;
 }
+
+// [[Rcpp::export]]
+NumericVector d(NumericVector val)
+{
+    return d/2;
+}
 ```
 ```{r eval = FALSE}
-code = paste(
+code_m = paste(
 "#include <Rcpp.h>",
 "using namespace Rcpp;",
 "",
@@ -369,9 +375,25 @@ code = paste(
 sep = '\n'
 )
 
-filename = tempfile(fileext = ".cpp")
-out = file(filename)
-writeLines(code, out)
+code_d = paste(
+"#include <Rcpp.h>",
+"using namespace Rcpp;",
+"",
+"// [[Rcpp::export]]",
+"NumericVector d(NumericVector val)",
+"{",
+"    return val/2;",
+"}",
+sep = '\n'
+)
+
+filename = tempfile()
+dir.create(filename)
+out = file(paste0(filename, "/m.cpp"))
+writeLines(code_m, out)
+close(out)
+out = file(paste0(filename, "/d.cpp"))
+writeLines(code_d, out)
 close(out)
 ```
 Функция init_func вызывается до начала обработки задания в каждом узле, созданным функцией makeCluster() (или в главном, если эта функция не вызывалась). Она нужна для дополнительной инициализации среды выполнения задачи. Используем сгенерированный ранее C++ файл для демонстрации работы этих параметров:
@@ -390,21 +412,21 @@ fun = function(val)
 
 init = function()
 {
-  sourceCpp(bfname)
+  sourceCpp("m.cpp")
 }
 
 data = 1:10
-bfname = basename(filename)
 
 # Здесь мы передаём функции как глобальные переменные:
-res = test_jobs(fun, data, 1, global_vars = list(bfname = bfname), 
-                packages = c("numbers", "Rcpp"), files = filename,
-                init_func = init)
+res = test_jobs(fun, data, 1, packages = c("numbers", "Rcpp"), 
+                files = paste0(filename, "/m.cpp"), init_func = init)
 
 for(val in res){
   print(val$result)
 }
 ```
+Также можно передать несколько файлов:
+
 
 ### Параметр install_func
 Очень редко бывает необходимо установить пакеты из нестандартных мест или сделать какие-то дополнительные действия, если часть пакетов не установилась. Функция install_func должна иметь один параметр и она будет вызвана только если в packages были перечисленны пакеты, которые не удалось загрузить или установить. В этом случае этой функции будет передан вектор, содержащий имена всех таких пакетов.

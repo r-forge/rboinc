@@ -140,11 +140,11 @@ test_jobs = function(work_func,
     tryCatch({
       inst = ""
       if(!is.null(packages)){
-        inst = system(paste0("Rscript ", t, "/install.R "), TRUE)
+        inst = system(paste0("Rscript ", t, "/install.R"), TRUE)
       }
       log = list(
         install = inst,
-        code = system(paste0("Rscript ", t, "/code.R "), TRUE))
+        code = system(paste0("Rscript ", t, "/code.R"), TRUE))
       tmpenv = new.env()
       obj_list = load(paste0(job_dir, "/shared/result.rda"), tmpenv)
       if((length(obj_list) == 1) && (obj_list[1] == "result")){
