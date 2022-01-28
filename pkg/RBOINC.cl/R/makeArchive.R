@@ -65,7 +65,7 @@ gen_r_scripts = function(original_work_func_name, init, glob_vars, packages, ins
     str = paste0(str,
     "list2env(RBOINC_global_vars, .GlobalEnv)\n")
   }
-  if(!is.null(init) && (!is_NULL_data)){
+  if(!is.null(init) && (!is_NULL_data) && (max_data_count > 1)){
     str = paste0(str,
     "clusterExport(RBOINC_cluster, ls(globalenv()))\n",
     "RBOINC_pseudo_init_func = function (RBOINC_procnum)\n",

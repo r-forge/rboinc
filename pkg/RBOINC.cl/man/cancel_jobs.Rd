@@ -11,7 +11,8 @@ cancel_jobs(connection, jobs_status)
 \link[=create_connection]{create_connection}}
 
 \item{jobs_status}{a list returned by \link[=create_jobs]{create_jobs} or
-\link[=update_jobs_status]{update_jobs_status}}
+\link[=update_jobs_status]{update_jobs_status}. This is reference like in C++
+language.}
 }
 \value{
 a list with current states of jobs. This list contains the following

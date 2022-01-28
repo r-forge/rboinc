@@ -4,13 +4,7 @@
 \alias{create_connection}
 \title{create_connection}
 \usage{
-create_connection(
-  server,
-  dir = "~/projects/rboinc",
-  username,
-  password = NULL,
-  keyfile = NULL
-)
+create_connection(server, dir, username, password = NULL, keyfile = NULL)
 }
 \arguments{
 \item{server}{a ssh or http server URL of the form

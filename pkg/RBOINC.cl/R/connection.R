@@ -88,7 +88,7 @@
 #' close_connection(con)
 #' }
 create_connection = function(server,
-                             dir = "~/projects/rboinc",
+                             dir,
                              username,
                              password = NULL,
                              keyfile = NULL)

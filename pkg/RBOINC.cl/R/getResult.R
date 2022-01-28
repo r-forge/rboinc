@@ -1,6 +1,6 @@
 # Original file name: "getResult.R"
 # Created: 2021.02.08
-# Last modified: 2021.10.25
+# Last modified: 2022.01.28
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -182,7 +182,8 @@ update_jobs_status_http = function(connection, jobs_status, callback_function)
 #' @param connection a connection created by
 #' \link[=create_connection]{create_connection}
 #' @param jobs_status a list returned by
-#' \link[=create_jobs]{create_jobs} or update_jobs_status.
+#' \link[=create_jobs]{create_jobs} or update_jobs_status. This is reference
+#' like in C++ language.
 #' @param callback_function a function with prototype
 #' \code{function(result_element)} that is called for each result after loading.
 #' The value returned by this function is placed in the result list.
@@ -214,6 +215,7 @@ update_jobs_status = function(connection, jobs_status, callback_function = NULL)
   } else if(jobs_status$status == "aborted"){
     stop("All jobs have already been canceled.")
   }
+  orig_name = deparse(substitute(jobs_status))
   if(connection$type == "ssh"){
     jobs_status = update_jobs_status_ssh(connection, jobs_status, callback_function)
     # File deletion from server:
@@ -239,5 +241,7 @@ update_jobs_status = function(connection, jobs_status, callback_function = NULL)
   }else{
     stop ("Unknown protocol.")
   }
+  tmp = parent.frame()
+  eval(parse(t = paste0("tmp$", orig_name, " = jobs_status")))
   return(jobs_status)
 }

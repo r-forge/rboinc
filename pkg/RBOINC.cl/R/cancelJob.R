@@ -1,6 +1,6 @@
 # Original file name: "cancelJob.R"
 # Created: 2021.10.20
-# Last modified: 2021.10.20
+# Last modified: 2021.01.28
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -17,7 +17,8 @@
 #' @param connection a connection created by
 #' \link[=create_connection]{create_connection}
 #' @param jobs_status a list returned by \link[=create_jobs]{create_jobs} or
-#' \link[=update_jobs_status]{update_jobs_status}
+#' \link[=update_jobs_status]{update_jobs_status}. This is reference like in C++
+#' language.
 #' @inherit create_jobs return
 #' @details
 #' This function cancels the specified jobs on the server. Status field in the
@@ -66,6 +67,7 @@ cancel_jobs = function(connection, jobs_status)
   } else if(jobs_status$status == "aborted"){
     stop("All jobs have already been canceled.")
   }
+  orig_name = deparse(substitute(jobs_status))
   if(connection$type == "ssh"){
     for(val in jobs_status$jobs_name){
       ssh_exec_wait(connection$connection,
@@ -89,6 +91,8 @@ cancel_jobs = function(connection, jobs_status)
     stop("Unknown protocol.")
   }
   jobs_status$status = "aborted"
+  tmp = parent.frame()
+  eval(parse(t = paste0("tmp$", orig_name, " = jobs_status")))
   return(jobs_status)
 }
 

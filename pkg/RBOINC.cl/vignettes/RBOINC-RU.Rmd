@@ -1,7 +1,7 @@
 ---
 title: "Инструкция к пакету RBOINC"
 author: "Сергей Астафьев aka ProgGrey"
-date: 27.01.2022
+date: 28.01.2022
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{RBOINC-RU}
@@ -177,6 +177,7 @@ test_jobs = function(work_func,
                      install_func = NULL)
 ```
 Её параметры:
+
 * work_func - функция обработки;
 * data - данные для обработки;
 * n - количество заданий;
@@ -187,9 +188,11 @@ test_jobs = function(work_func,
 * callback_function - функция обратного вызова;
 * install_func - функция установки.
 
+Эта функция создаёт пачку заданий, но никуда её не отправляет. Вместо этого она выполняет все задания локально, последовательно переходя от одного задания к другому. Нет никаких гарантий, что если с помощью этой функции удалось выполнить задание, то его удастся выполнить с момощью реального сервера BOINC. Однако эта функция сильно упрощает написание кода, поскольку позволяет проверить задания на типичные ошибки, например отсутствующие пакеты, необъявленные объекты, опечатки в коде и т.д.
+
 ### Параметры work_func и data
 Подключим пакет и выполним простейший код, умножающий вектор из 9 элементов на 5:
-```{r }
+```{r eval=FALSE}
 library(RBOINC.cl)
 
 fun = function(val)
@@ -200,17 +203,54 @@ fun = function(val)
 data = 1:9
 
 res = test_jobs(fun, data)
-
+```
+```
+## Testing archive making...	OK: /tmp/RtmpVolfKd/file7ae921bb5294.tar.xz
+## Creating tmp dir for test...	OK: /tmp/RtmpVolfKd/file7ae93f09e93c
+## Testing archive unpacking...	OK: founded files:
+## 	/tmp/RtmpVolfKd/file7ae93f09e93c/common.tar.xz
+## 	/tmp/RtmpVolfKd/file7ae93f09e93c/data/0.rda
+## 	/tmp/RtmpVolfKd/file7ae93f09e93c/data/1.rda
+## 	/tmp/RtmpVolfKd/file7ae93f09e93c/data/2.rda
+## 	/tmp/RtmpVolfKd/file7ae93f09e93c/data/3.rda
+## 	/tmp/RtmpVolfKd/file7ae93f09e93c/data/4.rda
+## 	/tmp/RtmpVolfKd/file7ae93f09e93c/data/5.rda
+## 	/tmp/RtmpVolfKd/file7ae93f09e93c/data/6.rda
+## 	/tmp/RtmpVolfKd/file7ae93f09e93c/data/7.rda
+## 	/tmp/RtmpVolfKd/file7ae93f09e93c/data/8.rda
+## Searching jobs...	OK: 9
+## Running job 0.rda in /tmp/RtmpVolfKd/file7ae921152c1b/0.rda OK
+## Running job 1.rda in /tmp/RtmpVolfKd/file7ae921152c1b/1.rda OK
+## Running job 2.rda in /tmp/RtmpVolfKd/file7ae921152c1b/2.rda OK
+## Running job 3.rda in /tmp/RtmpVolfKd/file7ae921152c1b/3.rda OK
+## Running job 4.rda in /tmp/RtmpVolfKd/file7ae921152c1b/4.rda OK
+## Running job 5.rda in /tmp/RtmpVolfKd/file7ae921152c1b/5.rda OK
+## Running job 6.rda in /tmp/RtmpVolfKd/file7ae921152c1b/6.rda OK
+## Running job 7.rda in /tmp/RtmpVolfKd/file7ae921152c1b/7.rda OK
+## Running job 8.rda in /tmp/RtmpVolfKd/file7ae921152c1b/8.rda OK
+```
+```{r eval=FALSE}
 for(val in res){
   print(val$result)
 }
+```
+```
+## [1] 5
+## [1] 10
+## [1] 15
+## [1] 20
+## [1] 25
+## [1] 30
+## [1] 35
+## [1] 40
+## [1] 45
 ```
 
 Функция создала 9 заданий, по числу элементов в data. Если параметр n не задан, то число заданий будет равно длине data.  data должен быть вектором или нумерованным списком. n должен быть меньше или равен длине data (но больше нуля). Если длина data не делится нацело на n, то у каких-то заданий окажется меньше работы. У work_func должен быть только 1 параметр, в который будет передан элемент data.
 
 ### Параметр n {#test_jobs_example_2}
 Давайте создадим 2 задания вместо 9:
-```{r }
+```{r  eval=FALSE}
 library(RBOINC.cl)
 
 fun = function(val)
@@ -221,14 +261,36 @@ fun = function(val)
 data = 1:9
 
 res = test_jobs(fun, data, 2)
-
+```
+```
+## Testing archive making...    OK: /tmp/RtmpyNMQCo/file7e3c1e496b0b.tar.xz
+## Creating tmp dir for test... OK: /tmp/RtmpyNMQCo/file7e3c7d82fd35
+## Testing archive unpacking... OK: founded files:
+##  /tmp/RtmpyNMQCo/file7e3c7d82fd35/common.tar.xz
+##  /tmp/RtmpyNMQCo/file7e3c7d82fd35/data/0.rda
+##  /tmp/RtmpyNMQCo/file7e3c7d82fd35/data/1.rda
+## Searching jobs...    OK: 2
+## Running job 0.rda in /tmp/RtmpyNMQCo/file7e3c34dca0ae/0.rda OK
+## Running job 1.rda in /tmp/RtmpyNMQCo/file7e3c34dca0ae/1.rda OK
+```
+```{r eval=FALSE}
 for(val in res){
   print(val$result)
 }
 ```
-
+```
+## [1] 5
+## [1] 10
+## [1] 15
+## [1] 20
+## [1] 25
+## [1] 30
+## [1] 35
+## [1] 40
+## [1] 45
+```
 Функция обработки данных может быть рекурсивной. Давайте посчитаем факториал:
-```{r }
+```{r eval=FALSE}
 library(RBOINC.cl)
 
 fac = function(val)
@@ -243,15 +305,37 @@ fac = function(val)
 data = 1:9
 
 res = test_jobs(fac, data, 2)
-
+```
+```
+## Testing archive making...    OK: /tmp/RtmpyNMQCo/file7e3c1e9c1f1.tar.xz
+## Creating tmp dir for test... OK: /tmp/RtmpyNMQCo/file7e3c6ec56d11
+## Testing archive unpacking... OK: founded files:
+##  /tmp/RtmpyNMQCo/file7e3c6ec56d11/common.tar.xz
+##  /tmp/RtmpyNMQCo/file7e3c6ec56d11/data/0.rda
+##  /tmp/RtmpyNMQCo/file7e3c6ec56d11/data/1.rda
+## Searching jobs...    OK: 2
+## Running job 0.rda in /tmp/RtmpyNMQCo/file7e3c34ff944c/0.rda OK
+## Running job 1.rda in /tmp/RtmpyNMQCo/file7e3c34ff944c/1.rda OK
+```
+``` {r eval=FALSE}
 for(val in res){
   print(val$result)
 }
 ```
-
+```
+## [1] 1
+## [1] 2
+## [1] 6
+## [1] 24
+## [1] 120
+## [1] 720
+## [1] 5040
+## [1] 40320
+## [1] 362880
+```
 ### Пропуск параметра data, параметры global_vars и packages
 Если вам не требуется какая-либо обработка данных, но требуется запустить сразу несколько заданий с одинаковыми параметрами, то вы можете опустить параметр data. Например, вычислим апроксимацию числа Пи методом Монте-Карло:
-```{r }
+```{r eval=FALSE}
 library(RBOINC.cl)
 
 N = 10000
@@ -272,11 +356,42 @@ for(val in res){
   prob = prob + val$result
   count = count + 1
 }
+```
+```
+## Testing archive making...    OK: /tmp/Rtmp52u06I/file80f654aeda91.tar.xz
+## Creating tmp dir for test... OK: /tmp/Rtmp52u06I/file80f6713be70c
+## Testing archive unpacking... OK: founded files:
+##  /tmp/Rtmp52u06I/file80f6713be70c/common.tar.xz
+##  /tmp/Rtmp52u06I/file80f6713be70c/data/0.rda
+##  /tmp/Rtmp52u06I/file80f6713be70c/data/1.rda
+##  /tmp/Rtmp52u06I/file80f6713be70c/data/2.rda
+##  /tmp/Rtmp52u06I/file80f6713be70c/data/3.rda
+##  /tmp/Rtmp52u06I/file80f6713be70c/data/4.rda
+##  /tmp/Rtmp52u06I/file80f6713be70c/data/5.rda
+##  /tmp/Rtmp52u06I/file80f6713be70c/data/6.rda
+##  /tmp/Rtmp52u06I/file80f6713be70c/data/7.rda
+##  /tmp/Rtmp52u06I/file80f6713be70c/data/8.rda
+##  /tmp/Rtmp52u06I/file80f6713be70c/data/9.rda
+## Searching jobs...    OK: 10
+## Running job 0.rda in /tmp/Rtmp52u06I/file80f62ce13dc9/0.rda OK
+## Running job 1.rda in /tmp/Rtmp52u06I/file80f62ce13dc9/1.rda OK
+## Running job 2.rda in /tmp/Rtmp52u06I/file80f62ce13dc9/2.rda OK
+## Running job 3.rda in /tmp/Rtmp52u06I/file80f62ce13dc9/3.rda OK
+## Running job 4.rda in /tmp/Rtmp52u06I/file80f62ce13dc9/4.rda OK
+## Running job 5.rda in /tmp/Rtmp52u06I/file80f62ce13dc9/5.rda OK
+## Running job 6.rda in /tmp/Rtmp52u06I/file80f62ce13dc9/6.rda OK
+## Running job 7.rda in /tmp/Rtmp52u06I/file80f62ce13dc9/7.rda OK
+## Running job 8.rda in /tmp/Rtmp52u06I/file80f62ce13dc9/8.rda OK
+## Running job 9.rda in /tmp/Rtmp52u06I/file80f62ce13dc9/9.rda OK
+```
+```{r eval=FALSE}
 print(prob/count*4)
 ```
-
+```
+## [1] 3.1362
+```
 Обратите внимание, что в этом случае прототип функции обработки меняется: теперь это функция без параметров. Здесь мы воспользовались дополнительным праметром global_vars, для передачи числа точек для генерации. global_vars обязательно должен быть списком в котором имена элементов соответствуют именам глобальных переменным. В качестве глобальной переменной можно передавать любой объект, который можно сохранить. Например, умножим нечётные элементы на 3, а чётные разделим на 2:
-```{r }
+```{r  eval=FALSE}
 library(RBOINC.cl)
 
 d = function(val)
@@ -303,12 +418,37 @@ data = 1:10
 
 # Здесь мы передаём функции как глобальные переменные:
 res = test_jobs(fun, data, 3, global_vars = list(d = d, m = m), packages = "numbers")
-
+```
+```
+## Testing archive making...    OK: /tmp/RtmpqWzQsX/file82102eac31ff.tar.xz
+## Creating tmp dir for test... OK: /tmp/RtmpqWzQsX/file821019b31c9d
+## Testing archive unpacking... OK: founded files:
+##  /tmp/RtmpqWzQsX/file821019b31c9d/common.tar.xz
+##  /tmp/RtmpqWzQsX/file821019b31c9d/data/0.rda
+##  /tmp/RtmpqWzQsX/file821019b31c9d/data/1.rda
+##  /tmp/RtmpqWzQsX/file821019b31c9d/data/2.rda
+## Searching jobs...    OK: 3
+## Running job 0.rda in /tmp/RtmpqWzQsX/file8210b91879a/0.rda OK
+## Running job 1.rda in /tmp/RtmpqWzQsX/file8210b91879a/1.rda OK
+## Running job 2.rda in /tmp/RtmpqWzQsX/file8210b91879a/2.rda OK
+```
+```{r  eval=FALSE}
 for(val in res){
   print(val$result)
 }
 ```
-
+```
+## [1] 3
+## [1] 1
+## [1] 9
+## [1] 2
+## [1] 15
+## [1] 3
+## [1] 21
+## [1] 4
+## [1] 27
+## [1] 5
+```
 Здесь мы воспользовались дополнительным параметром packages для передачи пакета. В общем случае можно передать несколько пакетов, в виде вектора из строк, т.е:
 ``` {r eval=FALSE}
 res = test_jobs(fun, data, 3, global_vars = list(d = d, m = m), packages = c("package1", "package2"))
@@ -317,11 +457,11 @@ res = test_jobs(fun, data, 3, global_vars = list(d = d, m = m), packages = c("pa
 ```{r eval = FALSE}
 options('repos')
 ```
-Дополнительно добавляется репозиторий 'https://cloud.r-project.org'. Поддерживаются только CRAN-подобные репозитории.
+Дополнительно добавляется репозиторий "https://cloud.r-project.org". Поддерживаются только CRAN-подобные репозитории.
 
 ### Параметр callback_function 
 Зачастую необходимо как-то проверить данные, сохранить или выполнить постобработку. В этом случае можно передать функцию обратного вызова через callback_function. Эта функция должна принимать 1 параметр, равный элементу результата. То, что возвращает эта функция будет считаться результатом задания и помещаться в массив результата. Например, выведем все значения [второго примера](#test_jobs_example_2) через print, а в качестве результата вернём NULL:
-```{r }
+```{r  eval=FALSE}
 library(RBOINC.cl)
 
 fun = function(val)
@@ -338,12 +478,43 @@ callback = function(val)
 data = 1:9
 
 res = test_jobs(fun, data, 2, callback_function = callback)
-
+```
+```
+## Testing archive making...    OK: /tmp/Rtmp4vKgVw/file842667802be2.tar.xz
+## Creating tmp dir for test... OK: /tmp/Rtmp4vKgVw/file842625f8718b
+## Testing archive unpacking... OK: founded files:
+##  /tmp/Rtmp4vKgVw/file842625f8718b/common.tar.xz
+##  /tmp/Rtmp4vKgVw/file842625f8718b/data/0.rda
+##  /tmp/Rtmp4vKgVw/file842625f8718b/data/1.rda
+## Searching jobs...    OK: 2
+## Running job 0.rda in /tmp/Rtmp4vKgVw/file84261fb28e93/0.rda [1] 5
+## [1] 10
+## [1] 15
+## [1] 20
+## [1] 25
+## OK
+## Running job 1.rda in /tmp/Rtmp4vKgVw/file84261fb28e93/1.rda [1] 30
+## [1] 35
+## [1] 40
+## [1] 45
+## OK
+```
+```{r  eval=FALSE}
 for(val in res){
   print(val$result)
 }
 ```
-
+```
+## NULL
+## NULL
+## NULL
+## NULL
+## NULL
+## NULL
+## NULL
+## NULL
+## NULL
+```
 ### Параметры init_func и files
 Через параметр files можно передать дополнительные файлы. Раскидаем по 2-м файл следующий С++ код:
 ```{c eval = FALSE}
@@ -387,17 +558,17 @@ code_d = paste(
 sep = '\n'
 )
 
-filename = tempfile()
-dir.create(filename)
-out = file(paste0(filename, "/m.cpp"))
+dirname = tempfile()
+dir.create(dirname)
+out = file(paste0(dirname, "/m.cpp"))
 writeLines(code_m, out)
 close(out)
-out = file(paste0(filename, "/d.cpp"))
+out = file(paste0(dirname, "/d.cpp"))
 writeLines(code_d, out)
 close(out)
 ```
-Функция init_func вызывается до начала обработки задания в каждом узле, созданным функцией makeCluster() (или в главном, если эта функция не вызывалась). Она нужна для дополнительной инициализации среды выполнения задачи. Используем сгенерированный ранее C++ файл для демонстрации работы этих параметров:
-```{r }
+Функция init_func вызывается до начала обработки задания в каждом узле, созданным функцией makeCluster() (или в главном, если эта функция не вызывалась). Она нужна для дополнительной инициализации среды выполнения задачи. Используем сгенерированный ранее C++ файл для демонстрации работы этих параметров. Если ваша операционная система Windows, то убедитесь в том, что rtools установлены и прописаны в PATH.
+```{r eval = FALSE}
 library(RBOINC.cl)
 
 fun = function(val)
@@ -417,27 +588,194 @@ init = function()
 
 data = 1:10
 
-# Здесь мы передаём функции как глобальные переменные:
 res = test_jobs(fun, data, 1, packages = c("numbers", "Rcpp"), 
-                files = paste0(filename, "/m.cpp"), init_func = init)
-
+                files = paste0(dirname, "/m.cpp"), init_func = init)
+```
+```
+## Testing archive making...    OK: /tmp/RtmpVesJoT/file8589257d6b26.tar.xz
+## Creating tmp dir for test... OK: /tmp/RtmpVesJoT/file85896d4563d
+## Testing archive unpacking... OK: founded files:
+##  /tmp/RtmpVesJoT/file85896d4563d/common.tar.xz
+##  /tmp/RtmpVesJoT/file85896d4563d/data/0.rda
+## Searching jobs...    OK: 1
+## Running job 0.rda in /tmp/RtmpVesJoT/file858955aa72c0/0.rda OK
+```
+```{r eval = FALSE}
 for(val in res){
   print(val$result)
 }
 ```
+```
+## [1] 3
+## [1] 1
+## [1] 9
+## [1] 2
+## [1] 15
+## [1] 3
+## [1] 21
+## [1] 4
+## [1] 27
+## [1] 5
+```
 Также можно передать несколько файлов:
+```{r eval = FALSE}
+library(RBOINC.cl)
 
+fun = function(val)
+{
+  if(mod(val,2) == 0){
+    res = d(val)
+  } else {
+    res = m(val)
+  }
+  return(res)
+}
 
+init = function()
+{
+  sourceCpp("m.cpp")
+  sourceCpp("d.cpp")
+}
+
+data = 1:10
+
+res = test_jobs(fun, data, 1, packages = c("numbers", "Rcpp"), 
+                files = c(paste0(dirname, "/m.cpp"), paste0(dirname, "/d.cpp")),
+                init_func = init)
+```
+```
+## Testing archive making...    OK: /tmp/RtmpuwJJjv/file882b7cf2d67b.tar.xz
+## Creating tmp dir for test... OK: /tmp/RtmpuwJJjv/file882b2e22b0aa
+## Testing archive unpacking... OK: founded files:
+##  /tmp/RtmpuwJJjv/file882b2e22b0aa/common.tar.xz
+##  /tmp/RtmpuwJJjv/file882b2e22b0aa/data/0.rda
+## Searching jobs...    OK: 1
+## Running job 0.rda in /tmp/RtmpuwJJjv/file882b4f28d359/0.rda OK
+```
+```{r eval = FALSE}
+for(val in res){
+  print(val$result)
+}
+```
+Кроме этого, можно передать папки целиком:
+```{r eval = FALSE}
+library(RBOINC.cl)
+
+fun = function(val)
+{
+  if(mod(val,2) == 0){
+    res = d(val)
+  } else {
+    res = m(val)
+  }
+  return(res)
+}
+
+init = function()
+{
+  sourceCpp(paste0(dname, "/m.cpp"))
+  sourceCpp(paste0(dname, "/d.cpp"))
+}
+
+data = 1:3
+
+res = test_jobs(fun, data, packages = c("numbers", "Rcpp"), 
+                global_vars = list(dname = basename(dirname)),
+                files = dirname, init_func = init)
+```
+```
+## Testing archive making...    OK: /tmp/Rtmpn8bszK/file8b31254dc04.tar.xz
+## Creating tmp dir for test... OK: /tmp/Rtmpn8bszK/file8b317e7d6d2f
+## Testing archive unpacking... OK: founded files:
+##  /tmp/Rtmpn8bszK/file8b317e7d6d2f/common.tar.xz
+##  /tmp/Rtmpn8bszK/file8b317e7d6d2f/data/0.rda
+##  /tmp/Rtmpn8bszK/file8b317e7d6d2f/data/1.rda
+##  /tmp/Rtmpn8bszK/file8b317e7d6d2f/data/2.rda
+## Searching jobs...    OK: 3
+## Running job 0.rda in /tmp/Rtmpn8bszK/file8b31373acce1/0.rda OK
+## Running job 1.rda in /tmp/Rtmpn8bszK/file8b31373acce1/1.rda OK
+## Running job 2.rda in /tmp/Rtmpn8bszK/file8b31373acce1/2.rda OK
+```
+```{r eval = FALSE}
+for(val in res){
+  print(val$result)
+}
+```
+```
+## [1] 3
+## [1] 1
+## [1] 9
+```
 ### Параметр install_func
-Очень редко бывает необходимо установить пакеты из нестандартных мест или сделать какие-то дополнительные действия, если часть пакетов не установилась. Функция install_func должна иметь один параметр и она будет вызвана только если в packages были перечисленны пакеты, которые не удалось загрузить или установить. В этом случае этой функции будет передан вектор, содержащий имена всех таких пакетов.
+Очень редко бывает необходимо установить пакеты из нестандартных мест или сделать какие-то дополнительные действия, если часть пакетов не установилась. Функция install_func должна иметь один параметр и она будет вызвана после установки пакетов, перечисленных в packages. В функцию будет передан вектор, содержащий имена всех пакетов, которые не удалось установить. Если внутри этой функции вам необходимо вызывать какие-либо функции из пакетов, перечисленных в packages, то обращайтесь к ним через двоеточие. Например, выполним код, который требует пакет с Bioconductor:
+```{r  eval=FALSE}
+library(RBOINC.cl)
+
+fun = function()
+{
+  mat = matrix(c(0, 0, 1, 1,
+                  0, 0, 1, 1,
+                  1, 1, 0, 1,
+                  1, 1, 1, 0),
+                byrow=TRUE, ncol=4)
+   rownames(mat) <- letters[1:4]
+   colnames(mat) <- letters[1:4]
+   return(graphAM(adjMat=mat))
+}
+
+inst = function(pkgs)
+{
+  BiocManager::install(ask=FALSE)
+  for(val in pkgs){
+    BiocManager::install(val, ask=FALSE)
+  }
+}
+
+res = test_jobs(fun, n = 1, packages = c("BiocManager", "graph"),
+                install_func = inst)
+
+BiocManager::install("Rgraphviz", ask=FALSE)
+library('Rgraphviz')
+
+plot(res[[1]]$result)
+```
 
 ## Функция create_connection
+Теперь рассмотрим функции для работы с реальным сервером RBOINC. Первая функция, которая нам понадобится, это функция создания подключения create_connection с прототипом:
+```{r eval = FALSE}
+create_connection = function(server,
+                             dir,
+                             username,
+                             password = NULL,
+                             keyfile = NULL)
+```
+Рассмотрим её параметры:
 
+* server - адрес сервера, в формате \<протокол\>://\<адрес сервера (ip или доменное имя)\>:\<порт\>. Порт может быть опущен.
+* dir - директория проекта на сервере. Папка с файлами проекта в случае ssh интерфейса. Страница проекта в случае http/https интерфейса
+* username - логин пользователя в случае ssh интерфейса, почта пользователя в случае http/https интерфейса.
+* password - пароль пользователя. Если не указан, то откроется диалоговое окно с требованием ввода пароля.
+* keyfile - только для ssh протокола. Файл ключа для доступа к серверу.
+
+Для получения учётных данных для создания заданий обратитесь к администратору вашего RBOINC проекта. В настоящий момент использование ssh интерфейса не рекомендуется. Если ваш сервер использует http/https интерфейс, то процедура получения прав на создание заданий обычно происходит в два этапа: сначало вы создаёте на нём обычную учётную запись пользователя BOINC, а потом администратор выдаёт ей права на создание заданий.
+
+Примеры использования:
+```{r eval=FALSE}
+con = create_connection("ssh://server.local", "~/projects/rboinc_dev", "boincadm", "Emooka9u") 
+con = create_connection("http://server.local", "rboinc_dev", "submitter@example.com","ahth3Eze")
+con = create_connection("https://server.local", "rboinc_dev", "submitter@example.com")
+```
+
+Эта функция должна быть вызвана до того, как вы попытаетесь как-либо взаимодействовать с сервером. Она возвращает соединение (список с параметрами, необходимыми другим функциям для работы с сервером) и может сгенерировать исключения при ошибках.
 
 ## Функция close_connection
+Это функция обратная для create_connection. Она закрывает соединение, переданное в качестве единственного её параметра. После вызова этой функции объект, переданный ей в качестве параметра, не может быть использован никакими другими функциями. Перед завершением сеанса R всегда убеждайтесь, что вы вызвали close_connection для всех открытых ранее create_connection соединений. Обратите внимание, что единственный параметр этой функции по сути является ссылкой.
 
-## Функция create_jobs
-
-## Функция update_jobs_status
+## Функции create_jobs и update_jobs_status
 
 ## Функция cancel_jobs
+Это функция для отмены пачки заданий. В качестве первого параметра ей должно быть передано открытое заранее функцией create_connection соединение. В качестве второго - параметра передаётся статус пачки работы, который возвращается функциями create_jobs и update_jobs_status. Немотря на то, что второй параметр ссылка, правильный вызов этой функции такой:
+```{r eval=FALSE}
+status = cancel_jobs(con, status)
+```
+Не передавайте объект status или его копию другим функциям после вызова этой функции.
