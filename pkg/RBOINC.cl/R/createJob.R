@@ -1,6 +1,6 @@
 # Original file name: "createJob.R"
 # Created: 2021.02.04
-# Last modified: 2022.01.26
+# Last modified: 2022.01.31
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -316,7 +316,11 @@ create_jobs = function(connection,
   if((connection$type != "ssh") && (connection$type != "http")){
     stop ("Unknown protocol.")
   }
-  result_count = length(data)
+  if(is_NULL_data){
+    result_count = n
+  }else {
+    result_count = length(data)
+  }
   lst = split_list(data, n)
   ar = make_archive(work_func,
                     deparse(substitute(work_func)),

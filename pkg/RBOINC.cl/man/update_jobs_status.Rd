@@ -11,7 +11,8 @@ update_jobs_status(connection, jobs_status, callback_function = NULL)
 \link[=create_connection]{create_connection}}
 
 \item{jobs_status}{a list returned by
-\link[=create_jobs]{create_jobs} or update_jobs_status.}
+\link[=create_jobs]{create_jobs} or update_jobs_status. This is reference
+like in C++ language.}
 
 \item{callback_function}{a function with prototype
 \code{function(result_element)} that is called for each result after loading.
