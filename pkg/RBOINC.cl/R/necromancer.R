@@ -27,7 +27,7 @@ virtual_compress = function(tarfile, files = NULL)
 virtual_decompress = function(file, directory = ".")
 {
   if(pkg.env$is_default_decompress_implementation){
-    return(untar(file, exdir = directory))
+    return(untar(file, exdir = directory, tar = Sys.getenv("tar")))
   }else{
     file.copy(file, directory)
     bname = basename(file)
