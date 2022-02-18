@@ -14,20 +14,23 @@
 pkg.env <- new.env()
 pkg.env$is_default_compress_implementation = TRUE
 pkg.env$is_default_decompress_implementation = TRUE
+pkg.env$is_windows = FALSE
 
 virtual_compress = function(tarfile, files = NULL)
 {
   if(pkg.env$is_default_compress_implementation){
     return(tar(tarfile, files, compression = "xz"))
   }else{
-    return(tar(tarfile, files, compression = "xz", tar = "tar"))
+    return(tar(tarfile, files, compression = "xz", tar = "internal"))
   }
 }
 
 virtual_decompress = function(file, directory = ".")
 {
   if(pkg.env$is_default_decompress_implementation){
-    return(untar(file, exdir = directory, tar = Sys.getenv("tar")))
+    return(untar(file, exdir = directory))
+  }else if(pkg.env$is_windows){
+    return(untar(file, exdir = directory, tar = "internal"))
   }else{
     file.copy(file, directory)
     bname = basename(file)
@@ -103,5 +106,13 @@ get_compression_mode = function(tar_version = "")
       packageStartupMessage("Your tar version may contain a bug that prevents the package from working. Please consider upgrading.")
     }
     options(warn = default_warn)
+  }
+  # Solution for Windows 10 bsdtar:
+  if(Sys.info()['sysname'] == "Windows"){
+    pkg.env$is_windows = TRUE
+    pkg.env$is_default_decompress_implementation = FALSE
+    if((version$major < 4) || ((version$major == 4)&& (version$minor < 0.3))){
+      packageStartupMessage("Your R version will soon be no longer supported by our package. Please consider upgrading.")
+    }
   }
 }
