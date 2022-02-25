@@ -1,6 +1,6 @@
 # Original file name: "makeArchive.R"
 # Created: 2021.02.03
-# Last modified: 2022.01.27
+# Last modified: 2022.02.25
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -13,7 +13,7 @@ gen_r_scripts = function(original_work_func_name, init, glob_vars, packages, ins
 {
   # First, create install script
   inst = ""
-  if(!is.null(packages)){
+  if(!is.null(packages) || !is.null(install_func)){
     repos = "c("
     for(val in options('repos')$repos){
       if(startsWith(val, "http") || startsWith(val, "ftp")){
@@ -35,6 +35,7 @@ gen_r_scripts = function(original_work_func_name, init, glob_vars, packages, ins
       inst = paste0(inst,
       "RBOINC_not_installed = setdiff(c('", paste(packages, collapse = "', '"),"'), installed.packages()[,1])\n",
       "load('code.rda')\n",
+      "setwd('./files/')\n",
       "RBOINC_additional_inst_func(RBOINC_not_installed)\n")
     }
   }

@@ -1,6 +1,6 @@
 # Original file name: "testAPI.R"
 # Created: 2021.03.19
-# Last modified: 2022.01.26
+# Last modified: 2022.02.25
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -139,7 +139,7 @@ test_jobs = function(work_func,
     setwd(t)
     tryCatch({
       inst = ""
-      if(!is.null(packages)){
+      if(!is.null(packages) || !is.null(install_func)){
         inst = system(paste0("Rscript ", t, "/install.R"), TRUE)
       }
       log = list(
