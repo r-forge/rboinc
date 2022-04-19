@@ -21,7 +21,8 @@ Description: Running tasks on a BOINC server. This software consist of 3 parts.
   this machine (pre-built VMs can be found here:
   <https://disk.yandex.ru/d/e_aItFuMPfKF2A>). Virtual machine is a part of BOINC
   application, therefore you must download it to your BOINC server.
-Imports: R.utils, askpass, foreach, httr, ssh, xml2, stats, utils, doParallel, parallel
+Imports: R.utils, askpass, foreach, httr, ssh, xml2, stats, utils, 
+         doParallel, parallel, tools
 License: BSD_3_clause + file LICENSE
 Encoding: UTF-8
 LazyData: true

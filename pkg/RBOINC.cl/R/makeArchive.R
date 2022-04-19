@@ -28,12 +28,18 @@ gen_r_scripts = function(original_work_func_name, init, glob_vars, packages, ins
     for(val in packages){
       inst = paste0(inst,
       "if(!require(", val, ")){\n",
-      "  install.packages('", val, "', lib = Sys.getenv('R_LIBS_USER'), repos = ", repos, ")\n",
+      "  install.packages('", val, "', lib = Sys.getenv('R_LIBS_USER'), Ncpus = parallel::detectCores(), repos = ", repos, ")\n",
       "}\n")
     }
     if(!is.null(install_func)){
       inst = paste0(inst,
-      "RBOINC_not_installed = setdiff(c('", paste(packages, collapse = "', '"),"'), installed.packages()[,1])\n",
+      "RBOINC_needs_packages = ", "c('", paste(packages, collapse = "', '"),"')\n",
+      "RBOINC_needs_packages_deps = c()\n",
+      "for(RBOINC_val in tools::package_dependencies(RBOINC_needs_packages, recursive = TRUE)){\n",
+      "  RBOINC_needs_packages_deps = c(RBOINC_needs_packages_deps, RBOINC_val)\n",
+      "}\n",
+      "RBOINC_needs_packages = unique(c(RBOINC_needs_packages_deps, RBOINC_needs_packages))\n",
+      "RBOINC_not_installed = setdiff(RBOINC_needs_packages, installed.packages()[,1])\n",
       "load('code.rda')\n",
       "setwd('./files/')\n",
       "RBOINC_additional_inst_func(RBOINC_not_installed)\n")
