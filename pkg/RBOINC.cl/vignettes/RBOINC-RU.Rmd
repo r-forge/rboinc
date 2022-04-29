@@ -1,7 +1,7 @@
 ---
 title: "Инструкция к пакету RBOINC"
 author: "Сергей Астафьев aka ProgGrey"
-date: 31.01.2022
+date: 29.04.2022
 VignetteBuilder: knitr
 output: rmarkdown::html_vignette
 vignette: >
@@ -136,7 +136,33 @@ RBOINC Можно разделить на 3 части:
 
 Также рекомендуется добавить в запуск по расписанию каждые несколько минут команду "boinccmd --project \<Project URL\> update". В данный момент у проекта есть некоторые проблемы связанные с тем, что в определённый момент число заданий на сервере может стать нулевым. В этом случае BOINC Client перестаёт запрашивать новые задания и заставить его это сделать можно или ручным обновлением проекта или перезагузкой компьютера. Я не нашёл решения этой проблемы в документации BOINC, если знаете, как её решить - пошлите мне письмо на почту или добавьте feature request в репозитории RBOINC. 
 
-Если ваша операционная система Ubuntu и выполнении заданий завершается с ошибкой "Postponed: VM job unmanageable, restarting later", то добавьте в атозагрузку запуск "vboxwebsrv" от пользователя "boinc" и перезагрузите компьютер. Это может распространяться и на другие ОС семейства Linux.
+Если ваша операционная система Ubuntu и выполнении заданий завершается с ошибкой "Postponed: VM job unmanageable, restarting later", то добавьте в атозагрузку запуск "vboxwebsrv" от пользователя "boinc" и перезагрузите компьютер. Тоже самое необходимо сделать, если все задания завершаются с ошибкой "NS_ERROR_SOCKET_FAIL". Если вашей системой инициализации является systemd, то это можно сделать следующим образом (все действия необходимо выполнять от root):
+
+1. Создать файл "/etc/systemd/system/run-vbox-as-boinc.service" со следующим содержимым:
+
+```
+[Unit]
+Description=Run vboxwebsrv as user boinc
+DefaultDependencies=no
+After=network.target  
+
+[Service]  
+Type=simple
+User=boinc 
+Group=boinc
+ExecStart=/usr/bin/vboxwebsrv
+TimeoutStartSec=0  
+RemainAfterExit=yes
+
+[Install]
+WantedBy=default.target
+```
+2. Выполнить команды:
+   1. systemctl daemon-reload
+   1. systemctl enable run-vbox-as-boinc
+   1. service run-vbox-as-boinc start
+
+Это может распространяться и на другие ОС семейства Linux. 
 
 ## Пакет R
 
