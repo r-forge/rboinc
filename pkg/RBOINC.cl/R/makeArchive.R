@@ -1,6 +1,6 @@
 # Original file name: "makeArchive.R"
 # Created: 2021.02.03
-# Last modified: 2022.02.25
+# Last modified: 2022.07.14
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -14,28 +14,33 @@ gen_r_scripts = function(original_work_func_name, init, glob_vars, packages, ins
   # First, create install script
   inst = ""
   if(!is.null(packages) || !is.null(install_func)){
-    repos = "c("
+    repos = c()
     for(val in options('repos')$repos){
       if(startsWith(val, "http") || startsWith(val, "ftp")){
-        repos = paste0(repos, "'", val, "', ")
+        repos = c(repos, val)
       }
     }
     # Add default mirror:
-    repos = paste0(repos, "'https://cloud.r-project.org')")
+    repos = c(repos, 'https://cloud.r-project.org')
+    repos = paste0("c('", paste(repos, collapse = "', '"), "')")
     #create a folder for the installed packages just in case:
-    inst = "dir.create(Sys.getenv('R_LIBS_USER'), FALSE, TRUE)\n"
+    inst = paste0(
+      "dir.create(Sys.getenv('R_LIBS_USER'), FALSE, TRUE)\n",
+      "library(utils)\n",
+      "library(parallel)\n")
     # package installing:
     for(val in packages){
       inst = paste0(inst,
       "if(!require(", val, ")){\n",
-      "  install.packages('", val, "', lib = Sys.getenv('R_LIBS_USER'), Ncpus = parallel::detectCores(), repos = ", repos, ")\n",
+      "  install.packages('", val, "', lib = Sys.getenv('R_LIBS_USER'), Ncpus = detectCores(), repos = ", repos, ")\n",
       "}\n")
     }
     if(!is.null(install_func)){
       inst = paste0(inst,
+      "library(tools)\n",
       "RBOINC_needs_packages = ", "c('", paste(packages, collapse = "', '"),"')\n",
       "RBOINC_needs_packages_deps = c()\n",
-      "for(RBOINC_val in tools::package_dependencies(RBOINC_needs_packages, recursive = TRUE)){\n",
+      "for(RBOINC_val in package_dependencies(RBOINC_needs_packages, db = available.packages(contrib.url(", repos, ")), recursive = TRUE)){\n",
       "  RBOINC_needs_packages_deps = c(RBOINC_needs_packages_deps, RBOINC_val)\n",
       "}\n",
       "RBOINC_needs_packages = unique(c(RBOINC_needs_packages_deps, RBOINC_needs_packages))\n",
