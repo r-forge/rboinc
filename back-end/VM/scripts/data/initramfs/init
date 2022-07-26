@@ -1,0 +1,30 @@
+#!/bin/busybox sh
+# Original file name: "Init"
+# Created: 2022.07.19
+# Last modified: 2022.07.21
+# License: BSD-3-clause
+# Written by: Astaf'ev Sergey <seryymail@mail.ru>
+# This is a part of RBOINC R package
+# Copyright (c) 2022 Karelian Research Centre of
+# the RAS: Institute of Applied Mathematical Researh
+# All rights reserved
+
+PATH="/bin:/sbin:/usr/bin:/usr/sbin"
+mount -t proc none /proc
+mount -t sysfs none /sys
+mount -t devtmpfs none /dev
+
+echo "RBOINC InitRD is loaded!"
+#/bin/busybox sh
+
+mount -a
+mkdir /mnt/tmp/u
+mkdir /mnt/tmp/w
+mount -t overlay overlay -o lowerdir=/mnt/sfs,upperdir=/mnt/tmp/u,workdir=/mnt/tmp/w /mnt/root
+
+
+umount /proc
+umount /sys
+umount /dev
+
+exec switch_root /mnt/root /sbin/init

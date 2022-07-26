@@ -1,6 +1,6 @@
 Package: RBOINC.cl
-Title: This Package Allow you to Run your Tasks at BOINC Server. Current Status: Beta-4
-Version: 0.9.4.228
+Title: This Package Allow you to Run your Tasks at BOINC Server. Current Status: rc-1
+Version: 0.9.5.230
 URL: https://r-forge.r-project.org/R/?group_id=540
 BugReports: https://r-forge.r-project.org/tracker/?group_id=540
 Authors@R: 
@@ -15,19 +15,15 @@ Authors@R:
            email = "ar0@krc.karelia.ru",
            comment = c(ORCID = "https://orcid.org/0000-0003-2364-5939"))
            )
-Description: Running tasks on a BOINC server. This software consist of 3 parts. 
-  The server part must be installed at BOINC server before using this package. 
-  You must also build your custom virtual machine with R and install vm part at
-  this machine (pre-built VMs can be found here:
-  <https://disk.yandex.ru/d/e_aItFuMPfKF2A>). Virtual machine is a part of BOINC
-  application, therefore you must download it to your BOINC server.
+Description: Running tasks on a BOINC server.
 Imports: R.utils, askpass, foreach, httr, ssh, xml2, stats, utils, 
-         doParallel, parallel, tools
+         doParallel, parallel, tools, BiocManager
+Depends: R (>= 4.0.3)
 License: BSD_3_clause + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.1
 Suggests: 
     rmarkdown,
     knitr

@@ -1,6 +1,6 @@
 # Original file name: "testAPI.R"
 # Created: 2021.03.19
-# Last modified: 2022.02.25
+# Last modified: 2022.07.26
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -17,6 +17,7 @@
 #' @importFrom doParallel registerDoParallel
 #' @importFrom parallel makeCluster
 #' @importFrom parallel detectCores
+#' @importFrom BiocManager install
 
 #' @export test_jobs
 
@@ -108,7 +109,7 @@ test_jobs = function(work_func,
 
 
   printf("Testing archive unpacking...\t")
-  if(virtual_decompress(ar, tmpdir) == 0){
+  if(untar(ar, exdir = tmpdir, tar = "internal") == 0){
     printf("OK: founded files:\n")
     for(val in list.files(tmpdir, full.names = TRUE, recursive = TRUE)){
       printf("\t%s\n", val)
@@ -128,13 +129,12 @@ test_jobs = function(work_func,
   result = vector("list", length(data))
   job_dir = tempfile()
   dir.create(job_dir, FALSE)
-  dir.create(paste0(job_dir, "/shared"))
   for(val in jobs){
     t = paste0(job_dir, "/", basename(val))
     printf("Running job %s in %s ", val, t)
     dir.create(t, FALSE)
     file.copy(paste0(tmpdir, "/data/", val), paste0(t, "/data.rda"))
-    virtual_decompress(paste0(tmpdir, "/common.tar.xz"), t)
+    untar(paste0(tmpdir, "/common.tar.xz"), exdir = t, tar = "internal")
     dir.create(paste0(t, "/files"), FALSE)
     setwd(t)
     tryCatch({
@@ -146,7 +146,7 @@ test_jobs = function(work_func,
         install = inst,
         code = system(paste0("Rscript ", t, "/code.R"), TRUE))
       tmpenv = new.env()
-      obj_list = load(paste0(job_dir, "/shared/result.rda"), tmpenv)
+      obj_list = load(paste0(job_dir, "/result.rda"), tmpenv)
       if((length(obj_list) == 1) && (obj_list[1] == "result")){
         if(is.null(callback_function)){
           for(val in tmpenv$result){

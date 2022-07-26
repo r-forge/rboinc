@@ -1,0 +1,5 @@
+set 1 legacy_boot on
+set 2 swap on
+name 1 boot
+name 2 swap
+quit

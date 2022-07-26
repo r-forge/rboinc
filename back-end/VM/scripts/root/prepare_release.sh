@@ -15,9 +15,9 @@ echo "Cleaning portage cache:"
 eclean distfiles
 eclean packages
 eselect news purge
-rm /var/cache/distfiles/*
 echo "Cleaning logs:"
 truncate -s 0 /var/log/emerge.log
 truncate -s 0 /var/log/emerge-fetch.log
-rm -r /var/log/portage/*
+truncate -s 0 /var/log/lastlog
+truncate -s 0 /var/log/wtmp
 echo -e "\033[32mCleaning completed. Copy fs to new disk to reduce size.\033[0m"

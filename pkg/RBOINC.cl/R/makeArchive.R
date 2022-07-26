@@ -1,6 +1,6 @@
 # Original file name: "makeArchive.R"
 # Created: 2021.02.03
-# Last modified: 2022.07.14
+# Last modified: 2022.07.26
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -23,11 +23,11 @@ gen_r_scripts = function(original_work_func_name, init, glob_vars, packages, ins
     # Add default mirror:
     repos = c(repos, 'https://cloud.r-project.org')
     repos = paste0("c('", paste(repos, collapse = "', '"), "')")
-    #create a folder for the installed packages just in case:
+    #Include need packages
     inst = paste0(
-      "dir.create(Sys.getenv('R_LIBS_USER'), FALSE, TRUE)\n",
       "library(utils)\n",
-      "library(parallel)\n")
+      "library(parallel)\n",
+      "library(tools)\n")
     # package installing:
     for(val in packages){
       inst = paste0(inst,
@@ -35,15 +35,19 @@ gen_r_scripts = function(original_work_func_name, init, glob_vars, packages, ins
       "  install.packages('", val, "', lib = Sys.getenv('R_LIBS_USER'), Ncpus = detectCores(), repos = ", repos, ")\n",
       "}\n")
     }
-    if(!is.null(install_func)){
-      inst = paste0(inst,
-      "library(tools)\n",
+    inst = paste0(inst,
       "RBOINC_needs_packages = ", "c('", paste(packages, collapse = "', '"),"')\n",
       "RBOINC_needs_packages_deps = c()\n",
       "for(RBOINC_val in package_dependencies(RBOINC_needs_packages, db = available.packages(contrib.url(", repos, ")), recursive = TRUE)){\n",
       "  RBOINC_needs_packages_deps = c(RBOINC_needs_packages_deps, RBOINC_val)\n",
       "}\n",
       "RBOINC_needs_packages = unique(c(RBOINC_needs_packages_deps, RBOINC_needs_packages))\n",
+      "RBOINC_not_installed = setdiff(RBOINC_needs_packages, installed.packages()[,1])\n",
+      "if(length(RBOINC_not_installed) > 0){\n",
+      "    BiocManager::install(RBOINC_not_installed, ask = FALSE)\n",
+      "}\n")
+    if(!is.null(install_func)){
+      inst = paste0(inst,
       "RBOINC_not_installed = setdiff(RBOINC_needs_packages, installed.packages()[,1])\n",
       "load('code.rda')\n",
       "setwd('./files/')\n",
@@ -70,7 +74,7 @@ gen_r_scripts = function(original_work_func_name, init, glob_vars, packages, ins
     "setwd('./files/')\n")
   if((!is_NULL_data) && (max_data_count > 1)){
     str = paste0(str,
-    "RBOINC_cluster = makeCluster(detectCores())\n",
+    "RBOINC_cluster = makeCluster(min(detectCores(), length(RBOINC_data)))\n",
     "registerDoParallel(RBOINC_cluster)\n")
   }
   if(!is.null(glob_vars)){
@@ -89,7 +93,7 @@ gen_r_scripts = function(original_work_func_name, init, glob_vars, packages, ins
     str = paste0(str,
     "  RBOINC_init_func()\n",
     "}\n",
-    "clusterCall(cl = RBOINC_cluster, fun =  RBOINC_pseudo_init_func, detectCores())\n")
+    "clusterCall(cl = RBOINC_cluster, fun =  RBOINC_pseudo_init_func, min(detectCores(), length(RBOINC_data)))\n")
   } else if(!is.null(init)){
     str = paste0(str,
     "RBOINC_init_func()\n")
@@ -118,7 +122,7 @@ gen_r_scripts = function(original_work_func_name, init, glob_vars, packages, ins
                        "pos = RBOINC_data[[1]]$pos))\n")
   }
   str = paste0(str,
-    "setwd('../../shared/')\n",
+    "setwd('../../')\n",
     "save(result, file='result.rda', compress='xz', compression_level = 9)\n")
   if((!is_NULL_data) && (max_data_count > 1)){
     str = paste0(str,
@@ -205,13 +209,14 @@ make_archive = function(RBOINC_work_func,
   setwd(tmp_dir)
   tryCatch({
     if(scripts$install == ""){
-      virtual_compress(paste0(tmp_dir, "/common.tar.xz"),
-                       c("code.rda", "code.R", "files"))
+      tar(paste0(tmp_dir, "/common.tar.xz"), c("code.rda", "code.R", "files"),
+          compression = "xz", tar = "internal", compression_level = 9)
     } else {
-      virtual_compress(paste0(tmp_dir, "/common.tar.xz"),
-                       c("code.rda", "code.R", "install.R", "files"))
+      tar(paste0(tmp_dir, "/common.tar.xz"), c("code.rda", "code.R", "install.R", "files"),
+          compression = "xz", tar = "internal", compression_level = 9)
     }
-    virtual_compress(archive_path, c("common.tar.xz", "data"))
+    tar(archive_path, c("common.tar.xz", "data"), 
+        compression = "xz", tar = "internal", compression_level = 9)
   }, error = function(mess){
     stop(paste0("Archive making error: '", mess, "'"))
   }
