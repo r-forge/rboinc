@@ -1,6 +1,6 @@
 # Original file name: "makeArchive.R"
 # Created: 2021.02.03
-# Last modified: 2022.07.26
+# Last modified: 2022.11.11
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -14,44 +14,32 @@ gen_r_scripts = function(original_work_func_name, init, glob_vars, packages, ins
   # First, create install script
   inst = ""
   if(!is.null(packages) || !is.null(install_func)){
-    repos = c()
-    for(val in options('repos')$repos){
-      if(startsWith(val, "http") || startsWith(val, "ftp")){
-        repos = c(repos, val)
-      }
-    }
-    # Add default mirror:
-    repos = c(repos, 'https://cloud.r-project.org')
-    repos = paste0("c('", paste(repos, collapse = "', '"), "')")
     #Include need packages
     inst = paste0(
       "library(utils)\n",
       "library(parallel)\n",
-      "library(tools)\n")
+      "library(gtools)\n")
     # package installing:
-    for(val in packages){
-      inst = paste0(inst,
-      "if(!require(", val, ")){\n",
-      "  install.packages('", val, "', lib = Sys.getenv('R_LIBS_USER'), Ncpus = detectCores(), repos = ", repos, ")\n",
-      "}\n")
-    }
     inst = paste0(inst,
-      "RBOINC_needs_packages = ", "c('", paste(packages, collapse = "', '"),"')\n",
-      "RBOINC_needs_packages_deps = c()\n",
-      "for(RBOINC_val in package_dependencies(RBOINC_needs_packages, db = available.packages(contrib.url(", repos, ")), recursive = TRUE)){\n",
-      "  RBOINC_needs_packages_deps = c(RBOINC_needs_packages_deps, RBOINC_val)\n",
+      "if(system('curl google.com', intern = FALSE, ignore.stdout = TRUE, ignore.stderr = TRUE) != 0){\n",
+      "  Sys.sleep(5)\n",
       "}\n",
-      "RBOINC_needs_packages = unique(c(RBOINC_needs_packages_deps, RBOINC_needs_packages))\n",
-      "RBOINC_not_installed = setdiff(RBOINC_needs_packages, installed.packages()[,1])\n",
-      "if(length(RBOINC_not_installed) > 0){\n",
-      "    BiocManager::install(RBOINC_not_installed, ask = FALSE)\n",
+      "RBOINC_needs_packages = ", "c('", paste(packages, collapse = "', '"),"')\n",
+      "for(RBOINC_val in RBOINC_needs_packages){\n",
+      "  if(!require(RBOINC_val)){\n",
+      "    BiocManager::install(RBOINC_val, lib = Sys.getenv('R_LIBS_USER'), Ncpus = detectCores(), ask = FALSE)\n",
+      "  }\n",
       "}\n")
     if(!is.null(install_func)){
       inst = paste0(inst,
-      "RBOINC_not_installed = setdiff(RBOINC_needs_packages, installed.packages()[,1])\n",
+      "RBOINC_pakages_list = installed.packages()[,1]\n",
+      "RBOINC_not_installed = setdiff(RBOINC_needs_packages, RBOINC_pakages_list)\n",
+      "RBOINC_installed = setdiff(RBOINC_needs_packages, RBOINC_not_installed)\n",
+      "RBOINC_packages_deps = getDependencies(RBOINC_installed, available = FALSE)\n",
+      "RBOINC_problems_packages = setdiff(unique(c(RBOINC_not_installed, RBOINC_packages_deps)), RBOINC_pakages_list)\n",
       "load('code.rda')\n",
       "setwd('./files/')\n",
-      "RBOINC_additional_inst_func(RBOINC_not_installed)\n")
+      "RBOINC_additional_inst_func(RBOINC_problems_packages)\n")
     }
   }
   # Second, create job script
@@ -215,7 +203,7 @@ make_archive = function(RBOINC_work_func,
       tar(paste0(tmp_dir, "/common.tar.xz"), c("code.rda", "code.R", "install.R", "files"),
           compression = "xz", tar = "internal", compression_level = 9)
     }
-    tar(archive_path, c("common.tar.xz", "data"), 
+    tar(archive_path, c("common.tar.xz", "data"),
         compression = "xz", tar = "internal", compression_level = 9)
   }, error = function(mess){
     stop(paste0("Archive making error: '", mess, "'"))

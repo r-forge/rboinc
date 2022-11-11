@@ -1,5 +1,5 @@
 #!/usr/bin/Rscript
-# Original file name: "update_packages.R"
+# Original file name: "make_release.R"
 # Created: 2022.07.22
 # Last modified: 2022.11.10
 # License: BSD-3-clause
@@ -8,11 +8,14 @@
 # Copyright (c) 2022 Karelian Research Centre of
 # the RAS: Institute of Applied Mathematical Researh
 # All rights reserved
+library(parallel)
 
-packages = c("BiocManager", "parallel", "doParallel", "foreach", "gtools")
+# Write your packages here:
+packages = c("pcalg", "ParallelPC")
+
 for(val in packages){
     if(!require(val)){
-        install.packages(val, repos = "https://cloud.r-project.org")
+        BiocManager::install(val, Ncpus = detectCores(), ask = FALSE)
     }
 }
-BiocManager::install(ask = FALSE, checkBuilt = TRUE)
+BiocManager::install(Ncpus = detectCores(), ask = FALSE, checkBuilt = TRUE)

@@ -1,6 +1,6 @@
 # Original file name: "testAPI.R"
 # Created: 2021.03.19
-# Last modified: 2022.07.26
+# Last modified: 2022.11.11
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -18,6 +18,7 @@
 #' @importFrom parallel makeCluster
 #' @importFrom parallel detectCores
 #' @importFrom BiocManager install
+#' @importFrom gtools getDependencies
 
 #' @export test_jobs
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 # Original file name: "make_release.sh"
 # Created: 2021.07.12
-# Last modified: 2022.07.21
+# Last modified: 2022.11.10
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -14,7 +14,8 @@ then
     echo -e '\033[31mThis script is not for manual execution!\033[0m'
     exit 1
 fi
-
+echo "Installing additional R packages..."
+/root/scripts/make_release.R
 echo "Deleting packages..."
 emerge --deselect sys-kernel/gentoo-sources
 emerge --depclean --deep

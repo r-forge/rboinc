@@ -1,6 +1,6 @@
 Package: RBOINC.cl
-Title: This Package Allow you to Run your Tasks at BOINC Server. Current Status: rc-1
-Version: 0.9.5.230
+Title: This Package Allow you to Run your Tasks at BOINC Server. Current Status: rc-2
+Version: 0.9.6.230
 URL: https://r-forge.r-project.org/R/?group_id=540
 BugReports: https://r-forge.r-project.org/tracker/?group_id=540
 Authors@R: 
@@ -17,7 +17,7 @@ Authors@R:
            )
 Description: Running tasks on a BOINC server.
 Imports: R.utils, askpass, foreach, httr, ssh, xml2, stats, utils, 
-         doParallel, parallel, tools, BiocManager
+         doParallel, parallel, gtools, BiocManager
 Depends: R (>= 4.0.3)
 License: BSD_3_clause + file LICENSE
 Encoding: UTF-8
