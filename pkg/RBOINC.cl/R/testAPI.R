@@ -9,6 +9,8 @@
 # All rights reserved
 
 #' @importFrom R.utils printf
+#' @importFrom utils tar
+#' @importFrom utils untar
 
 # The next lines was added only to add foreach to the list of dependencies.
 # foreach is used by the generated script and therefore is required by the

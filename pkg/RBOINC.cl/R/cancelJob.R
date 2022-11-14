@@ -1,6 +1,6 @@
 # Original file name: "cancelJob.R"
 # Created: 2021.10.20
-# Last modified: 2021.01.28
+# Last modified: 2022.11.14
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -92,7 +92,7 @@ cancel_jobs = function(connection, jobs_status)
   }
   jobs_status$status = "aborted"
   tmp = parent.frame()
-  eval(parse(t = paste0("tmp$", orig_name, " = jobs_status")))
+  eval(parse(text = paste0("tmp$", orig_name, " = jobs_status")))
   return(jobs_status)
 }
 

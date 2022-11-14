@@ -1,6 +1,6 @@
 # Original file name: "makeArchive.R"
 # Created: 2021.02.03
-# Last modified: 2022.11.11
+# Last modified: 2022.11.14
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -8,6 +8,7 @@
 # the RAS: Institute of Applied Mathematical Research
 # All rights reserved
 
+#' @importFrom utils tar
 
 gen_r_scripts = function(original_work_func_name, init, glob_vars, packages, install_func, is_NULL_data, max_data_count)
 {
@@ -20,9 +21,14 @@ gen_r_scripts = function(original_work_func_name, init, glob_vars, packages, ins
       "library(parallel)\n",
       "library(gtools)\n")
     # package installing:
-    inst = paste0(inst,
-      "if(system('curl google.com', intern = FALSE, ignore.stdout = TRUE, ignore.stderr = TRUE) != 0){\n",
-      "  Sys.sleep(5)\n",
+    if(!is.null(packages)){
+      inst = paste0(inst,
+      "for(k in 1:5){\n",
+      "  if(system('curl google.com', intern = FALSE, ignore.stdout = TRUE, ignore.stderr = TRUE) != 0){\n",
+      "    Sys.sleep(2)\n",
+      "  } else {\n",
+      "    break\n",
+      "  }\n",
       "}\n",
       "RBOINC_needs_packages = ", "c('", paste(packages, collapse = "', '"),"')\n",
       "for(RBOINC_val in RBOINC_needs_packages){\n",
@@ -30,13 +36,20 @@ gen_r_scripts = function(original_work_func_name, init, glob_vars, packages, ins
       "    BiocManager::install(RBOINC_val, lib = Sys.getenv('R_LIBS_USER'), Ncpus = detectCores(), ask = FALSE)\n",
       "  }\n",
       "}\n")
+    }
     if(!is.null(install_func)){
-      inst = paste0(inst,
+      if(!is.null(packages)){
+        inst = paste0(inst,
       "RBOINC_pakages_list = installed.packages()[,1]\n",
       "RBOINC_not_installed = setdiff(RBOINC_needs_packages, RBOINC_pakages_list)\n",
       "RBOINC_installed = setdiff(RBOINC_needs_packages, RBOINC_not_installed)\n",
       "RBOINC_packages_deps = getDependencies(RBOINC_installed, available = FALSE)\n",
-      "RBOINC_problems_packages = setdiff(unique(c(RBOINC_not_installed, RBOINC_packages_deps)), RBOINC_pakages_list)\n",
+      "RBOINC_problems_packages = setdiff(unique(c(RBOINC_not_installed, RBOINC_packages_deps)), RBOINC_pakages_list)\n")
+      }else{
+        inst = paste0(inst,
+      "RBOINC_problems_packages = c()\n")
+      }
+      inst = paste0(inst,
       "load('code.rda')\n",
       "setwd('./files/')\n",
       "RBOINC_additional_inst_func(RBOINC_problems_packages)\n")

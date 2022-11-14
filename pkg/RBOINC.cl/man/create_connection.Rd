@@ -56,7 +56,7 @@ When errors occur, execution can be stopped with the following messages:
 \itemize{
 \item "Unsupported server address format."
 \item "Connection was canceled by user."
-\item "Unrecognized protocol: "\code{<}protocol\code{>}""
+\item "Unrecognized protocol: '\code{<}protocol\code{>}'
 }
 \item for http/https connections:
 \itemize{

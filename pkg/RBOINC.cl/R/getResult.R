@@ -1,6 +1,6 @@
 # Original file name: "getResult.R"
 # Created: 2021.02.08
-# Last modified: 2022.01.28
+# Last modified: 2022.11.14
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -242,6 +242,6 @@ update_jobs_status = function(connection, jobs_status, callback_function = NULL)
     stop ("Unknown protocol.")
   }
   tmp = parent.frame()
-  eval(parse(t = paste0("tmp$", orig_name, " = jobs_status")))
+  eval(parse(text = paste0("tmp$", orig_name, " = jobs_status")))
   return(jobs_status)
 }

@@ -1,6 +1,6 @@
 # Original file name: "connection.R"
 # Created: 2021.02.02
-# Last modified: 2021.12.16
+# Last modified: 2022.11.14
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -57,7 +57,7 @@
 #' * for any connections:
 #'   * "Unsupported server address format."
 #'   * "Connection was canceled by user."
-#'   * "Unrecognized protocol: "\code{<}protocol\code{>}""
+#'   * "Unrecognized protocol: '\code{<}protocol\code{>}'
 #' * for http/https connections:
 #'   * "Authorization failed."
 #' * for ssh connections:
@@ -137,7 +137,7 @@ create_connection = function(server,
     }
     return(list(type = "http", url = project_url, handle = handl))
   } else{
-    stop("Unrecognized protocol: \"", protocol, "\".")
+    stop("Unrecognized protocol: '", protocol, "'.")
   }
 }
 
