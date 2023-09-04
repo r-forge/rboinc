@@ -1,11 +1,11 @@
 #!/bin/bash
 # Original file name: "make_release.sh"
 # Created: 2021.07.12
-# Last modified: 2022.11.10
+# Last modified: 2023.06.22
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
-# Copyright (c) 2021-2022 Karelian Research Centre of
+# Copyright (c) 2021-2023 Karelian Research Centre of
 # the RAS: Institute of Applied Mathematical Research
 # All rights reserved
 
@@ -22,8 +22,8 @@ emerge --depclean --deep
 echo "Deleting kernel..."
 rm -r /usr/src/*
 echo "Cleaning portage cache..."
-eclean distfiles
-eclean packages
+eclean --deep distfiles
+eclean --deep packages
 eselect news purge
 echo "Deleting packages..."
 emerge --deselect app-portage/gentoolkit

@@ -1,6 +1,6 @@
 # Original file name: "getResult.R"
 # Created: 2021.02.08
-# Last modified: 2022.11.14
+# Last modified: 2023.09.04
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
@@ -13,6 +13,7 @@
 #' @importFrom httr GET
 #' @importFrom httr write_disk
 #' @importFrom xml2 as_list
+#' @importFrom xml2 xml_find_all
 
 #' @export update_jobs_status
 
@@ -129,39 +130,46 @@ update_jobs_status_http = function(connection, jobs_status, callback_function)
   error_flag = FALSE
   warning_flag = FALSE
   done_flag = TRUE
-  for(k in seq_len(length(jobs_status$jobs_name))){
-    if(jobs_status$jobs_status[k] == "done"){
+  response = send_http_message_to_server(connection, "query_batch",
+                                         list(batch_id = jobs_status$batch_id,
+                                              get_job_details = 1))
+  is_jobs_id = TRUE
+  if(is.null(jobs_status$jobs_id)){
+    is_jobs_id = FALSE
+    jobs_status$jobs_id = rep(0, length(jobs_status$jobs_name))
+  }
+  # For all jobs in batch:
+  for(val in xml_find_all(response, ".//job")){
+    #browser()
+    job = as_list(val)
+    pos = 0
+    if(is_jobs_id){# Find position by id
+      pos = which.max(as.numeric(job$id[[1]]) == jobs_status$jobs_id)
+    } else{#Find position by name
+      pos = which.max(job$name[[1]] == jobs_status$jobs_name)
+      jobs_status$jobs_id[pos] = as.numeric(job$id[[1]])
+    }
+    if(jobs_status$jobs_status[pos] == "done"){
       next
     }
-    # Get job state:
-    response = send_http_message_to_server(connection, "query_completed_job",
-                                           list(job_name = jobs_status$jobs_name[k]))
-    status = as_list(response)$query_completed_job
-    if(is.null(status$completed_job$exit_status)){
-      if(!is.null(status$error$error_num[[1]])){
-        if(status$error$error_num[[1]] == -1){
-          jobs_status$jobs_status[k] = "job_not_exist"
-          error_flag = TRUE
-        }
-      } else if(status$completed_job$error_mask == 0){# job not complete or fails
-        jobs_status$jobs_status[k] = "in_progress"
-      } else {
-        jobs_status$jobs_status[k] = paste0("error_code:", status$completed_job$error_mask)
-        error_flag = TRUE
+    # Copy status of job
+    jobs_status$jobs_status[pos] = job$status[[1]]
+    if(job$status[[1]] == "error"){
+      error_flag = TRUE
+      # Copy error code if exists
+      if(!is.null(job$exit_status[[1]])){
+        jobs_status$jobs_status[pos] = paste0(job$status[[1]], ": ", job$exit_status[[1]])
+      } else{
+        jobs_status$jobs_status[pos] = job$status[[1]]
       }
-    }else{
-      # Job complete:
-      if (status$completed_job$exit_status == 0){
-        jobs_status = finalize_result(connection, jobs_status, k, callback_function)
-        if(jobs_status$jobs_status[k] == "tmp_error"){
-          warning_flag = TRUE
-        }
-      } else {
-        jobs_status$jobs_status[k] = paste0("exit_code:", status$completed_job$exit_status)
-        error_flag = TRUE
+    } else if(job$status[[1]] == "done"){
+      # Try to download result
+      jobs_status = finalize_result(connection, jobs_status, pos, callback_function)
+      if(jobs_status$jobs_status[pos] == "tmp_error"){
+        warning_flag = TRUE
+        done_flag = FALSE
       }
-    }
-    if(jobs_status$jobs_status[k] != "done"){
+    } else {
       done_flag = FALSE
     }
   }

@@ -1,7 +1,7 @@
 #!/usr/bin/Rscript
 # Original file name: "make_release.R"
 # Created: 2022.07.22
-# Last modified: 2022.11.15
+# Last modified: 2022.11.10
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package

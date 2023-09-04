@@ -1,10 +1,10 @@
 # Original file name: "createJob.R"
 # Created: 2021.02.04
-# Last modified: 2022.01.31
+# Last modified: 2022.09.04
 # License: BSD-3-clause
 # Written by: Astaf'ev Sergey <seryymail@mail.ru>
 # This is a part of RBOINC R package.
-# Copyright (c) 2021-2022 Karelian Research Centre of
+# Copyright (c) 2021-2023 Karelian Research Centre of
 # the RAS: Institute of Applied Mathematical Research
 # All rights reserved
 
@@ -194,6 +194,7 @@ split_list = function(data, n)
 #'   * "initialization" - jobs have been submitted to the server, but their
 #'   status was not requested by update_jobs_status;
 #'   * "in_progress" - BOINC serves jobs;
+#'   * "queued" - a job in queue;
 #'   * "done" - computations are complete, the results were downloaded;
 #'   * "warning" a recoverable error occurred during the job processing;
 #'   * "error" - a serious error occurred during the job processing;
